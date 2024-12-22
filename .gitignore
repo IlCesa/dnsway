@@ -1,0 +1,5 @@
+/build
+/dist/
+/dnsway.egg-info
+/venv
+/tests
