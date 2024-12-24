@@ -1,7 +1,26 @@
-from dnsway.dns.converter.interface import DnsWaySerializer
-from dnsway.dns.message.header.types import OPCODE_TYPE, QUERY_TYPE, RCODE_TYPE
+from dnsway.dns.message.dns_serialize import DnsWaySerializer
+from enum import Enum
 import random
 
+
+class QUERY_TYPE(Enum):
+    QUERY           =   0x7FFF  # a query message
+    RESPONSE        =   0x8000  # a response message
+
+
+class OPCODE_TYPE(Enum):
+    QUERY           =   0x0 # standard query
+    IQUERY          =   0x1 << 11 # inverse querys
+    STATUS          =   0x2 << 11 # server status request
+
+
+class RCODE_TYPE(Enum):
+    NO_ERROR        =   0x0     # No error condition
+    FORMAT_ERROR    =   0x1     # Format error - The name server was unable to interpret the query.
+    SERVER_FAILURE  =   0x2     # Server failure - The name server was unable to process this query due to a problem with the name server.
+    NAME_ERROR      =   0x3     # Response only from an autorithative server. The requested domain name does not exists
+    NOT_IMPLEMENTED =   0x4     # The name server does not support the requested kind of query.
+    REFUSED         =   0x5     # The name server refuses to perform the operation for policy reason. For example the name server may not wish to provide the information.
 
 ## INFO ABOUT HEADER_FLAGS ##
 # 1 bit QR QUERY TYPE (0 query, 1 response)
@@ -16,21 +35,53 @@ import random
 
 class HeaderMessage(DnsWaySerializer):
     
-    
     def __init__(self):
-        self.id_rand = 0x00
-        self.header_flags = 0x00 #int(b'0x00',16)
-        self.qdcount = 0x00 #int(b'0x00',16)
-        self.ancount = 0x00 #int(b'0x00',16)
-        self.nscount = 0x00 #int(b'0x00',16)
-        self.arcount = 0x00 #int(b'0x00',16)
+        self.__id             = 0x00
+        self.__header_flags   = 0x00 
+        self.__qdcount        = 0x00 
+        self.__ancount        = 0x00 
+        self.__nscount        = 0x00 
+        self.__arcount        = 0x00 #int(b'0x00',16)
+        #super.__init__(params_list)
 
-
-    def generate_id(self):
-        self.id = random.randbytes(2)
+            
+    @property
+    def id(self):
+        return self.__id
     
 
-    def set_id(self,id:int):
+    @property
+    def flags(self):
+        return self.__header_flags
+
+
+    @property
+    def qdcount(self):
+        return self.__qdcount
+    
+
+    @property
+    def ancount(self):
+        return self.__ancount
+    
+
+    @property
+    def nscount(self):
+        return self.__nscount
+    
+
+    @property
+    def arcount(self):
+        return self.__arcount
+
+    
+    
+    def set_random_id(self):
+        self.id = random.randbytes(2)
+
+
+    @id.setter
+    def id(self,id:int):
         self.id = id.to_bytes(2,signed=True)
 
 
@@ -61,6 +112,8 @@ class HeaderMessage(DnsWaySerializer):
 
 
     def set_tc(self, tc_flag:bool):
+        '''
+        '''
         if tc_flag:
             self.header_flags = self.header_flags | (0x1 << 9)
         else:
@@ -96,9 +149,7 @@ class HeaderMessage(DnsWaySerializer):
             self.header_flags = self.header_flags | rcode_value
 
 
-    def set_Z(self):
-        '''this is for future use, should be all 0s'''
-        pass
+    def set_z(self): ...
 
 
     def set_qdcount(self, query_count:int):
@@ -118,11 +169,13 @@ class HeaderMessage(DnsWaySerializer):
         self.arcount = additional_records_count & 0xFFFF
 
 
+
+    
     def encode(self) -> bytearray:
         header_bytes_list = bytearray()
         
         header_message_list = [
-            self.id_rand,
+            self.id,
             self.header_flags,
             self.qdcount,
             self.ancount,
@@ -136,12 +189,8 @@ class HeaderMessage(DnsWaySerializer):
         return header_bytes_list
 
 
-    def decode(self, dns_stream:bytes) -> object:
-        pass
-
-
     def __str__(self):
-        print(f"ID      : {self.id_rand:016b}")
+        print(f"ID      : {self.id:016b}")
         print(f"FLAGS   : {self.header_flags:016b}")
         print(f"QDCOUNT : {self.qdcount:016b}")
         print(f"ANCOUNT : {self.ancount:016b}")
