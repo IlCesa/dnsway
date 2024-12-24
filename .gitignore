@@ -174,3 +174,4 @@ cython_debug/
 
 dnsway.egg-info/
 tests/
+temp_trash/
