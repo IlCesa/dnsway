@@ -1,17 +1,33 @@
 from dnsway.dns.message.definition.resource_record import QCLASS_VALUES, QTYPE_VALUES, RRecordData
+from dnsway.dns.message.definition.domain_name import DomainName
 from dnsway.dns.message.dns_serialize import DnsWaySerializer
 
 
 # this class implementation is about "answer, Authority and additional section of the dns message format"
+class ResourceRecordMessage(DnsWaySerializer):
+    def __init__(self):
+        self.rrformat_list = [ResourceRecordFormat()]
+
+    def encode(self) -> bytearray:
+        rrformat_bytes_list = bytearray()
+        for rrformat in self.rrformat_list:
+            rrformat_bytes_list = rrformat_bytes_list + rrformat.encode()
+        return rrformat_bytes_list
+    
+    def dump_message(self):
+        for rrformat in self.rrformat_list:
+            rrformat.dump_message()
+
+
 class ResourceRecordFormat(DnsWaySerializer):
 
     def __init__(self) -> None:
-        self.__name         = 0x00  # rfc1035 domain name space definition
-        self.__type_value   = 0x00  # rr format type
-        self.__class_value  = 0x00  # rr format class
-        self.__ttl          = 0x00  # unsigned 32 bit value, represent the maximum cachable time of the resource
-        self.__rdata_length = 0x00  # represent the length (in octets) of rdata section
-        self.__rdata        = RRecordData()  # rdata class object
+        self.__name         : DomainName        = DomainName()  # rfc1035 domain name space definition
+        self.__type_value   : QTYPE_VALUES      = 0x00          # rr format type
+        self.__class_value  : QCLASS_VALUES     = 0x00          # rr format class
+        self.__ttl          : int               = 0x00          # unsigned 32 bit value, represent the maximum cachable time of the resource
+        self.__rdata_length : int               = 0x00          # represent the length (in octets) of rdata section
+        self.__rdata        : RRecordData       = RRecordData() # rdata class object
 
 
     @property
@@ -69,10 +85,24 @@ class ResourceRecordFormat(DnsWaySerializer):
         self.rdata = None
         self.rdata_length = self.rdata.byte_length()
 
+    
+    def decode(self, msg_byte_stream):
+        return super().decode(msg_byte_stream)
+    
+    
+    def dump_message(self):
+        bits_list = [f"0b{bin(byte)[2:].zfill(8)}" for byte in self.name.encode()]
+        print(f"NAME            : {bits_list}")
+        print(f"TYPE            : {self.type_value:016b}")
+        print(f"CLASS           : {self.class_value:016b}")
+        print(f"TTL             : {self.ttl:032b}")
+        print(f"RDATA LENGTH    : {self.ttl:032b}")
+        self.rdata.dump_message()
+
 
     def encode(self, /) -> bytearray : 
         rrformat_bytes_list = bytearray()
-        rrformat_bytes_list = rrformat_bytes_list + self.name
+        rrformat_bytes_list = rrformat_bytes_list + self.name.encode()
 
         rrformat_16bit_list = [
             self.type_value,
@@ -88,6 +118,3 @@ class ResourceRecordFormat(DnsWaySerializer):
         
         return rrformat_bytes_list
 
-
-    def byte_length(self, /) -> int :
-        return len(self.encode())

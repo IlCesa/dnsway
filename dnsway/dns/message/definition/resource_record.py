@@ -1,6 +1,7 @@
 from dnsway.dns.message.dns_serialize import DnsWaySerializer
 from enum import Enum
 
+
 class QTYPE_VALUES(Enum):
     A               =   0x1     # a host address
     NS              =   0x2     # an authoritative name server
@@ -36,8 +37,14 @@ class QCLASS_VALUES(Enum):
 #      ARPA INTERNET RRs        #
 #################################
 
+
 class RRecordData(DnsWaySerializer):
-    pass
+    
+    def encode(self):
+        return bytearray()
+
+    def dump_message(self):
+        pass
 
 
 class WKSRecord():
@@ -64,6 +71,10 @@ class ARecord(RRecordData):
 
     def encode(self, /) -> bytearray:
         return self.ip_address
+    
+    def dump_message(self):
+        bits_list = [f"0b{bin(byte)[2:].zfill(8)}" for byte in self.encode()]
+        print(f"IPADDRESS   : {bits_list}")
 
 
     def byte_length(self, /) -> int:

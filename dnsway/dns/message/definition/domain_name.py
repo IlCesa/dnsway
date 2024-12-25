@@ -3,7 +3,7 @@ from dnsway.dns.message.dns_serialize import DnsWaySerializer
 
 class DomainName(DnsWaySerializer):
     def __init__(self):
-        self.__domain_name = 0x00
+        self.__domain_name:str = ""
 
 
     @property
@@ -17,7 +17,7 @@ class DomainName(DnsWaySerializer):
 
 
     # TODO: prevedere un meccanismo di compressione del messaggio tramite gestione dei puntatori (vedere 4.1.4. Message compression)
-    def name_to_bytes(self) -> bytearray:
+    def encode(self) -> bytearray:
         qname = bytearray()
         subdomain_list = self.domain_name.split('.')
         for subdomain in subdomain_list:
@@ -28,3 +28,9 @@ class DomainName(DnsWaySerializer):
                 qname.append(single_char)
         qname.append(0x00) #adding zero null octet
         return qname
+    
+    def decode(self, msg_byte_stream):
+        return super().decode(msg_byte_stream)
+    
+    def dump_message(self):
+        return super().dump_message()
