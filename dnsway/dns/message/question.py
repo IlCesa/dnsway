@@ -1,14 +1,17 @@
 from dnsway.dns.message.definition.resource_record import QCLASS_VALUES, QTYPE_VALUES
 from dnsway.dns.message.definition.domain_name import DomainName
 from dnsway.dns.message.dns_serialize import DnsWaySerializer
+from dnsway.dns.message.type import int16
 
 
 class QuestionMessage(DnsWaySerializer):
 
     def __init__(self):
-        self.__qname  : DomainName       =   DomainName()
-        self.__qtype  : QTYPE_VALUES     =   0x00 
-        self.__qclass : QCLASS_VALUES    =   0x00
+        self.__qname  : DomainName  =   DomainName()
+        self.__qtype  : int16       =   int16()
+        self.__qclass : int16       =   int16()
+        
+        super().__init__(label='QuestionMessage')
 
 
     @property
@@ -33,35 +36,24 @@ class QuestionMessage(DnsWaySerializer):
 
     @qtype.setter
     def qtype(self, qtype:QTYPE_VALUES):
-        self.__qtype = qtype.value & 0xFF
+        self.__qtype.value = qtype.value
 
 
     @qclass.setter
     def qclass(self, qclass:QCLASS_VALUES):
-        self.__qclass = qclass.value & 0xFF
+        self.__qclass.value = qclass.value
+
+    
+    def encode(self) -> bytearray :
+        return super().encode(self.qname, self.qtype,self.qclass)
 
 
-    def decode(self, msg_byte_stream:bytes, /) : 
-        pass
+    # def dump_message(self, /) -> None : 
+    #     bits_list = [f"0b{bin(byte)[2:].zfill(8)}" for byte in self.qname.encode()]
+    #     print(f"QNAME   : {bits_list}")
+    #     print(f"QTYPE   : {self.qtype:016b}")
+    #     print(f"QCLASS  : {self.qclass:016b}")
 
-
-    def dump_message(self, /) -> None : 
-        bits_list = [f"0b{bin(byte)[2:].zfill(8)}" for byte in self.qname.encode()]
-        print(f"QNAME   : {bits_list}")
-        print(f"QTYPE   : {self.qtype:016b}")
-        print(f"QCLASS  : {self.qclass:016b}")
-
-    def encode(self, /) -> bytearray : 
-        rrformat_bytes_list = bytearray()
-        rrformat_bytes_list = rrformat_bytes_list + self.qname.encode()
-
-        question_message_16bit_list = [
-            self.qtype,
-            self.qclass,
-        ]
-
-        for rrformat_16bit in question_message_16bit_list:
-            rrformat_bytes_list = rrformat_bytes_list + rrformat_16bit.to_bytes(length=2,byteorder='big')
-
-        
-        return rrformat_bytes_list
+    
+    # def decode(self, msg_byte_stream:bytes, /) : 
+    #     pass

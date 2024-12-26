@@ -1,26 +1,24 @@
 from dnsway.dns.message.dns_serialize import DnsWaySerializer
+from dnsway.dns.message.type import int16
 from enum import Enum
 import random
 
 
 class QUERY_TYPE(Enum):
-    QUERY           =   0x0      # query message
-    RESPONSE        =   0x1      # response message
 
-
-'''class OPCODE_TYPE(Enum):
-    QUERY           =   0x0         # standard query
-    IQUERY          =   0x1 << 11   # inverse querys
-    STATUS          =   0x2 << 11   # server status request'''
+    QUERY           =   0x0         # query message
+    RESPONSE        =   0x1         # response message
 
 
 class OPCODE_TYPE(Enum):
+
     QUERY           =   0x0         # standard query
     IQUERY          =   0x1         # inverse querys
     STATUS          =   0x2         # server status request
 
 
 class RCODE_TYPE(Enum):
+
     NO_ERROR        =   0x0         # No error condition
     FORMAT_ERROR    =   0x1         # Format error - The name server was unable to interpret the query.
     SERVER_FAILURE  =   0x2         # Server failure - The name server was unable to process this query due to a problem with the name server.
@@ -39,21 +37,22 @@ class RCODE_TYPE(Enum):
 # 4 bit RCODE (part of the response)
 
 class HeaderMessage(DnsWaySerializer):
-    QUERY_TYPE_SHIFT_BITS     = 15
-    OPCODE_SHIFT_BITS         = 11
-    RCODE_SHIFT_BITS          = 0
+    
+    QUERY_TYPE_SHIFT_BITS   =     15
+    OPCODE_SHIFT_BITS       =     11
+    RCODE_SHIFT_BITS        =     0
     
     def __init__(self):
-        self.__id             = 0x00
-        self.__header_flags   = 0x00 
-        self.__qdcount        = 0x00 
-        self.__ancount        = 0x00 
-        self.__nscount        = 0x00 
-        self.__arcount        = 0x00
-        #int(b'0x00',16) # convert binary string to pure integer
-        #super.__init__(params_list)
-
+        self.__id       :   int16   =   int16(int.from_bytes(random.randbytes(2), byteorder='big'))
+        self.__flags    :   int16   =   int16() 
+        self.__qdcount  :   int16   =   int16() 
+        self.__ancount  :   int16   =   int16() 
+        self.__nscount  :   int16   =   int16() 
+        self.__arcount  :   int16   =   int16() 
+        
+        super().__init__(label='HeaderMessage')
     
+
     @property
     def id(self):
         return self.__id
@@ -61,7 +60,7 @@ class HeaderMessage(DnsWaySerializer):
 
     @property
     def flags(self):
-        return self.__header_flags
+        return self.__flags
 
 
     @property
@@ -83,127 +82,92 @@ class HeaderMessage(DnsWaySerializer):
     def arcount(self):
         return self.__arcount
 
-    
-    def set_random_id(self):
-        self.__id = int.from_bytes(random.randbytes(2),byteorder='big')
-
 
     @id.setter
     def id(self,id:int):
-        self.id = id.to_bytes(2,signed=True)
+        self.id = id
+
 
 
     def set_query_type(self, query_type:QUERY_TYPE) -> None:
-        self.__header_flags = self.__header_flags & 0x7FFF
-        if query_type == QUERY_TYPE.QUERY:
-            #print(f"{QUERY_TYPE.QUERY.name}:{hex(QUERY_TYPE.QUERY.value)} ")
-            self.__header_flags = self.__header_flags & 0x7FFF
-        elif query_type == QUERY_TYPE.RESPONSE:
-            self.__header_flags = self.__header_flags | 0x8000
+        self.__flags.value = self.__flags.value & 0x7FFF
+
+        if query_type == QUERY_TYPE.RESPONSE:
+            self.__flags.value = self.__flags.value | 0x8000
     
 
     def set_opcode(self, opcode_type:OPCODE_TYPE):
         #clear the opcode bits
-        self.__header_flags = self.__header_flags & 0x87FF
-
-        if opcode_type == OPCODE_TYPE.QUERY:
-            self.__header_flags = self.__header_flags & 0x87FF
-        elif opcode_type == OPCODE_TYPE.IQUERY:
-            self.__header_flags = self.__header_flags | (opcode_type.value << 11)
-        elif opcode_type == OPCODE_TYPE.STATUS:
-            self.__header_flags = self.__header_flags | (opcode_type.value << 11)
+        self.__flags.value = self.__flags.value & 0x87FF
+        self.__flags.value = self.__flags.value | (opcode_type.value << self.OPCODE_SHIFT_BITS)
 
 
     def set_aa(self, aa_flag:bool):
+        self.__flags.value = self.__flags.value & (0xFBFF)
         if aa_flag:
-            self.__header_flags = self.__header_flags | (0x1 << 10)
-        else:
-            self.__header_flags = self.__header_flags & (0xFBFF)
-
+            self.__flags.value = self.__flags.value | (0x1 << 10)
+            
 
     def set_tc(self, tc_flag:bool):
+        self.__flags.value = self.__flags.value & (0xFDFF)
         if tc_flag:
-            self.__header_flags = self.__header_flags | (0x1 << 9)
-        else:
-            self.__header_flags = self.__header_flags & (0xFDFF)
+            self.__flags.value = self.__flags.value | (0x1 << 9)     
 
 
     def set_rd(self, rd_flag:bool):
+        self.__flags.value = self.__flags.value & (0xFEFF)
         if rd_flag:
-            self.__header_flags = self.__header_flags | (0x1 << 8)
-        else:
-            self.__header_flags = self.__header_flags & (0xFEFF)
+            self.__flags.value = self.__flags.value | (0x1 << 8)
 
 
     def set_ra(self, ra_flag:bool):
+        self.__flags.value = self.__flags.value & (0xFF7F)
         if ra_flag:
-            self.__header_flags = self.__header_flags | (0x1 << 7)
-        else:
-            self.__header_flags = self.__header_flags & (0xFF7F)
+            self.__flags.value = self.__flags.value | (0x1 << 7)       
 
 
     def set_rcode(self, rcode_type:RCODE_TYPE):
-        self.__header_flags = self.__header_flags & 0xFFF8
-        rcode_value = rcode_type.value
-        if rcode_type==RCODE_TYPE.NO_ERROR:
-            self.__header_flags = self.__header_flags | rcode_value
-        elif rcode_type==RCODE_TYPE.FORMAT_ERROR:
-            self.__header_flags = self.__header_flags | rcode_value
-        elif rcode_type==RCODE_TYPE.SERVER_FAILURE:
-            self.__header_flags = self.__header_flags | rcode_value
-        elif rcode_type==RCODE_TYPE.NAME_ERROR:
-            self.__header_flags = self.__header_flags | rcode_value
-        elif rcode_type==RCODE_TYPE.NOT_IMPLEMENTED:
-            self.__header_flags = self.__header_flags | rcode_value
+        self.__flags.value = self.__flags.value & 0xFFF8
+        self.__flags.value = self.__flags.value | (rcode_type.value << 0)
 
 
-    def set_z(self): ...
+
+    @qdcount.setter
+    def qdcount(self, query_count:int):
+        self.__qdcount.value = query_count
 
 
-    def set_qdcount(self, query_count:int):
-        self.__qdcount = query_count & 0xFFFF
-        pass
+    @ancount.setter
+    def ancount(self, answer_count:int):
+        self.__ancount.value = answer_count
 
 
-    def set_ancount(self, answer_count:int):
-        self.__ancount = answer_count & 0xFFFF
+    @nscount.setter
+    def nscount(self, nameserver_count):
+        self.__nscount.value = nameserver_count
 
 
-    def set_nscount(self, nameserver_count):
-        self.__nscount = nameserver_count & 0xFFFF
+    @arcount.setter
+    def arcount(self, additional_records_count:int):
+        self.__arcount.value = additional_records_count
 
-
-    def set_arcount(self, additional_records_count:int):
-        self.__arcount = additional_records_count & 0xFFFF
-
-
-    def encode(self) -> bytearray:
-        header_bytes_list = bytearray()
-        
-        header_message_list = [
-            self.id,
-            self.flags,
-            self.qdcount,
-            self.ancount,
-            self.nscount,
-            self.arcount
-        ]
-        
-        for header_message in header_message_list:
-            header_bytes_list = header_bytes_list + header_message.to_bytes(length=2,byteorder='big')
-        
-        return header_bytes_list
     
-    def decode(self, msg_byte_stream):
-        return super().decode(msg_byte_stream)
+    def encode(self) -> bytearray:
+        return super().encode(self.id, self.flags, self.qdcount, self.ancount, self.nscount, self.arcount)
+    
 
-    def dump_message(self):
-        print(f"ID      : {self.id:016b}")
-        print(f"FLAGS   : {self.__header_flags:016b}")
-        print(f"QDCOUNT : {self.qdcount:016b}")
-        print(f"ANCOUNT : {self.ancount:016b}")
-        print(f"NSCOUNT : {self.nscount:016b}")
-        print(f"ARCOUNT : {self.arcount:016b}")
+    # def dump_message(self):
+    #     print(f"ID      : {self.id:016b}")
+    #     print(f"FLAGS   : {self.__flags:016b}")
+    #     print(f"QDCOUNT : {self.qdcount:016b}")
+    #     print(f"ANCOUNT : {self.ancount:016b}")
+    #     print(f"NSCOUNT : {self.nscount:016b}")
+    #     print(f"ARCOUNT : {self.arcount:016b}")
 
-    def __str__(self):
-        return str(bin(int.from_bytes(self.encode(),byteorder='big')))
+    
+    # def decode(self, msg_byte_stream):
+    #     return super().decode(msg_byte_stream)
+
+
+    # def __str__(self):
+    #     return str(bin(int.from_bytes(self.encode(),byteorder='big')))

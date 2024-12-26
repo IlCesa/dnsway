@@ -7,30 +7,14 @@ from dnsway.dns.message.header import HeaderMessage
 class DnsMessage(DnsWaySerializer):
 
     def __init__(self):
-        self.header     : HeaderMessage          = HeaderMessage()
-        self.question   : QuestionMessage        = QuestionMessage()
-        self.answer     : ResourceRecordMessage  = ResourceRecordMessage()
-        self.autorithy  : ResourceRecordMessage  = ResourceRecordMessage()
-        self.additional : ResourceRecordMessage  = ResourceRecordMessage()
-
+        self.header     : HeaderMessage          =  HeaderMessage()
+        self.question   : QuestionMessage        =  QuestionMessage()
+        self.answer     : ResourceRecordMessage  =  ResourceRecordMessage(label='Answer')
+        self.autorithy  : ResourceRecordMessage  =  ResourceRecordMessage(label='Autorithy')
+        self.additional : ResourceRecordMessage  =  ResourceRecordMessage(label='Additional')
         
-        # super.__init__([self.header, self.question, self.answer, self.autorithy, self.additional])
+        super().__init__(label = 'DnsMessage')
 
-    
 
-    def encode(self, /) -> bytearray : 
-        dns_message_list = [self.header, self.question,self.answer,self.autorithy,self.additional]
-        encoded_dns_message = bytearray()
-        for section in dns_message_list:
-            encoded_dns_message = encoded_dns_message + section.encode()
-
-        return encoded_dns_message
-    
-    
-    # def decode(self, msg_byte_stream):
-    #     return super().decode(msg_byte_stream)
-    
-    def dump_message(self):
-        for section in [self.header, self.question, self.answer, self.autorithy, self.additional]:
-            section.dump_message()
-
+    def encode(self, /) -> bytearray:
+        return super().encode(self.header, self.question, self.answer, self.autorithy, self.additional)

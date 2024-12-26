@@ -7,22 +7,23 @@ from dnsway.dns.message.header import OPCODE_TYPE, QUERY_TYPE, RCODE_TYPE
 
 
 dns_message = DnsMessage()
-dns_message.header.set_random_id()
 dns_message.header.set_query_type(query_type=QUERY_TYPE.QUERY)
 dns_message.header.set_opcode(opcode_type=OPCODE_TYPE.QUERY)
 dns_message.header.set_aa(False)
 dns_message.header.set_tc(False)
 dns_message.header.set_rd(True)
 dns_message.header.set_ra(True)
-dns_message.header.set_qdcount(1)
-dns_message.header.set_ancount(0)
-dns_message.header.set_arcount(0)
+dns_message.header.qdcount = 1
+dns_message.header.ancount = 0
+dns_message.header.arcount = 0
 
-dns_message.question.qname = "github.com"
+dns_message.question.qname = "google.it"
 dns_message.question.qtype = QTYPE_VALUES.A
 dns_message.question.qclass = QCLASS_VALUES.IN
 
-dns_message.dump_message()
+print(dns_message.encode())
+
+#dns_message.dump_message()
 
 server_address = ("1.1.1.1", 53)
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

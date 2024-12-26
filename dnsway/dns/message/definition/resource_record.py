@@ -3,6 +3,7 @@ from enum import Enum
 
 
 class QTYPE_VALUES(Enum):
+
     A               =   0x1     # a host address
     NS              =   0x2     # an authoritative name server
     MD              =   0x3     # a mail destination (Obsolete - use MX)
@@ -26,6 +27,7 @@ class QTYPE_VALUES(Enum):
 
 
 class QCLASS_VALUES(Enum):
+
     IN              =   0x1     # the Internet
     CS              =   0x2     # the CSNET class (Obsolete - used only for examples in some obsolete RFCs)
     CH              =   0x3     # the CHAOS class
@@ -42,6 +44,7 @@ class RRecordData(DnsWaySerializer):
     
     def encode(self):
         return bytearray()
+
 
     def dump_message(self):
         pass
