@@ -9,7 +9,7 @@ with open(path.join(dir, 'README.md'), encoding='utf-8') as f:
 
 setuptools.setup(
    name='dnsway',
-   version='1.0.0',
+   version='1.0.3',
    description='A Simple Implementation of the RFC1035 DNS Memo.',
    long_description=long_description,
    long_description_content_type='text/markdown',
