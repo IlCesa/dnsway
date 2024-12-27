@@ -18,3 +18,4 @@ class DnsMessage(DnsWaySerializer):
 
     def encode(self, /) -> bytearray:
         return super().encode(self.header, self.question, self.answer, self.autorithy, self.additional)
+    

@@ -46,14 +46,3 @@ class QuestionMessage(DnsWaySerializer):
     
     def encode(self) -> bytearray :
         return super().encode(self.qname, self.qtype,self.qclass)
-
-
-    # def dump_message(self, /) -> None : 
-    #     bits_list = [f"0b{bin(byte)[2:].zfill(8)}" for byte in self.qname.encode()]
-    #     print(f"QNAME   : {bits_list}")
-    #     print(f"QTYPE   : {self.qtype:016b}")
-    #     print(f"QCLASS  : {self.qclass:016b}")
-
-    
-    # def decode(self, msg_byte_stream:bytes, /) : 
-    #     pass

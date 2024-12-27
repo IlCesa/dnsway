@@ -156,14 +156,6 @@ class HeaderMessage(DnsWaySerializer):
         return super().encode(self.id, self.flags, self.qdcount, self.ancount, self.nscount, self.arcount)
     
 
-    # def dump_message(self):
-    #     print(f"ID      : {self.id:016b}")
-    #     print(f"FLAGS   : {self.__flags:016b}")
-    #     print(f"QDCOUNT : {self.qdcount:016b}")
-    #     print(f"ANCOUNT : {self.ancount:016b}")
-    #     print(f"NSCOUNT : {self.nscount:016b}")
-    #     print(f"ARCOUNT : {self.arcount:016b}")
-
     
     # def decode(self, msg_byte_stream):
     #     return super().decode(msg_byte_stream)

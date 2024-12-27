@@ -16,16 +16,20 @@ dns_message.header.nscount = 0
 dns_message.header.arcount = 0
 
 
-dns_message.question.qname  = "www.github.com"
+dns_message.question.qname  = "www.potentissimo.com"
 dns_message.question.qtype  = QTYPE_VALUES.A
 dns_message.question.qclass = QCLASS_VALUES.IN
 
+dns_message.hex_dump()
+
 encoded_dns_message = dns_message.encode()
 
-#dns_message.dump_message()
 server_address = ("8.8.8.8", 53)
 msg_byte_length = len(encoded_dns_message)
+print(dns_message.question.length())
 print(f"byte size: {msg_byte_length}. encoded message: {encoded_dns_message}")
+print(dns_message.length())
+exit(1)
 if msg_byte_length <= 512:
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:

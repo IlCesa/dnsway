@@ -22,16 +22,13 @@ class DomainName(DnsWaySerializer):
         qname = bytearray()
         subdomain_list = self.domain_name.split('.')
         for subdomain in subdomain_list:
-            length_octet = len(subdomain) & 0x3F # maschera per prendere solo i primi 6 bit
+            length_octet = len(subdomain) & 0x3F # mask to extract 6 bit only
             qname.append(length_octet)
             for subdomain_char in subdomain:
-                single_char = ord(subdomain_char) & 0xFF # maschera per estrarre 8 bit
+                single_char = ord(subdomain_char) & 0xFF # mask to extract 8 bit only
                 qname.append(single_char)
         qname.append(0x00) #adding zero null octet
         return qname
     
     def decode(self, msg_byte_stream):
         return super().decode(msg_byte_stream)
-    
-    def dump_message(self):
-        return super().dump_message()

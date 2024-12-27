@@ -13,11 +13,7 @@ class ResourceRecordMessage(DnsWaySerializer):
 
     def encode(self) -> bytearray:
         return super().encode(*self.rrformat_list)
-    
 
-    # def dump_message(self):
-    #     for rrformat in self.rrformat_list:
-    #         rrformat.dump_message()
 
 
 class ResourceRecordFormat(DnsWaySerializer):

@@ -20,6 +20,7 @@ class int16(int, DnsWaySerializer):
 
     def encode(self):
         return self.value.to_bytes(length=2, byteorder='big')
+            
 
     def __str__(self):
         return str(self.value)
@@ -48,6 +49,7 @@ class int32(DnsWaySerializer):
 
     def encode(self) -> bytearray:
         return self.value.to_bytes(length=4, byteorder='big')
+
     
     def __str__(self):
         return str(self.value)
