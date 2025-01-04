@@ -1,6 +1,8 @@
 from dnsway.dns.message.dns_serialize import DnsWaySerializer
 from enum import Enum
 
+from dnsway.dns.message.type import int16
+
 
 class QTYPE_VALUES(Enum):
 
@@ -41,9 +43,24 @@ class QCLASS_VALUES(Enum):
 
 
 class RRecordData(DnsWaySerializer):
+
+    def __init__(self, rdata_length:int16, label):
+        super().__init__(label)
+        self.rdata_length = rdata_length
     
     def encode(self):
         return bytearray()
+
+    
+    def decode(self, data:bytearray, offset:int) -> int:
+        data = data[offset:]
+        if len(data) == 0:
+            return 0
+        print("IN RRECORD DATA DECODE PHASE")
+        print("rdata length",self.rdata_length)
+        print("RRRECORDDATA: ",data)
+        print("------------")
+        return self.rdata_length.value
 
 
 class WKSRecord():
@@ -70,13 +87,13 @@ class ARecord(RRecordData):
 
     def encode(self, /) -> bytearray:
         return self.ip_address
+    
+
+    def decode(self, data:bytearray):
+        return 4
 
 
-    def byte_length(self, /) -> int:
-        return len(self.encode())
-
-
-    def __str__(self):
+    def __str__(self) -> str:
         return self.ip_address.__str__()
 
 

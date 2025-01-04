@@ -26,7 +26,8 @@ class RCODE_TYPE(Enum):
     NOT_IMPLEMENTED =   0x4         # The name server does not support the requested kind of query.
     REFUSED         =   0x5         # The name server refuses to perform the operation for policy reason. For example the name server may not wish to provide the information.
 
-## INFO ABOUT HEADER_FLAGS ##
+
+# -- INFO ABOUT HEADER_FLAGS -- #
 # 1 bit QR QUERY TYPE (0 query, 1 response)
 # 4 bit OPCODE (0 standard query, 1 inverse query, 2 server status request)
 # 1 bit AA (valid only in response, specify that the responding name server the autorithative one)
@@ -35,6 +36,7 @@ class RCODE_TYPE(Enum):
 # 1 bit RA recursion available (only if server support recursive option)
 # 3 bit Z (future use) must be ALL ZEROS
 # 4 bit RCODE (part of the response)
+
 
 class HeaderMessage(DnsWaySerializer):
     
@@ -85,19 +87,16 @@ class HeaderMessage(DnsWaySerializer):
 
     @id.setter
     def id(self,id:int):
-        self.id = id
-
+        self.id.value = id
 
 
     def set_query_type(self, query_type:QUERY_TYPE) -> None:
         self.__flags.value = self.__flags.value & 0x7FFF
-
         if query_type == QUERY_TYPE.RESPONSE:
             self.__flags.value = self.__flags.value | 0x8000
     
 
     def set_opcode(self, opcode_type:OPCODE_TYPE):
-        #clear the opcode bits
         self.__flags.value = self.__flags.value & 0x87FF
         self.__flags.value = self.__flags.value | (opcode_type.value << self.OPCODE_SHIFT_BITS)
 
@@ -131,7 +130,6 @@ class HeaderMessage(DnsWaySerializer):
         self.__flags.value = self.__flags.value | (rcode_type.value << 0)
 
 
-
     @qdcount.setter
     def qdcount(self, query_count:int):
         self.__qdcount.value = query_count
@@ -154,11 +152,16 @@ class HeaderMessage(DnsWaySerializer):
     
     def encode(self) -> bytearray:
         return super().encode(self.id, self.flags, self.qdcount, self.ancount, self.nscount, self.arcount)
-    
 
     
-    # def decode(self, msg_byte_stream):
-    #     return super().decode(msg_byte_stream)
+    def decode(self, data:bytearray, offset:int) -> int:
+        k =  super().decode(data, offset, self.id, self.flags, self.qdcount, self.ancount, self.nscount, self.arcount)
+        '''print("answercount:",self.ancount,"-----------")
+        print("QDCOUNT:",self.qdcount,"-----------")
+        print("nscount:",self.nscount,"-----------")
+        print("arcount:",self.arcount,"-----------")
+        print("HEADER DECODED")'''
+        return k
 
 
     # def __str__(self):

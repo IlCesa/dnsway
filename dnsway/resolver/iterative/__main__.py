@@ -3,6 +3,11 @@ from dnsway.dns.message.header import OPCODE_TYPE, QUERY_TYPE, RCODE_TYPE
 from dnsway.dns.message.dns_message import DnsMessage
 import socket
 
+import sys
+
+# endianness = sys.byteorder
+# print(f"L'endianness del sistema è: {endianness}")
+
 dns_message = DnsMessage()
 dns_message.header.set_query_type(query_type=QUERY_TYPE.QUERY)
 dns_message.header.set_opcode(opcode_type=OPCODE_TYPE.QUERY)
@@ -16,7 +21,7 @@ dns_message.header.nscount = 0
 dns_message.header.arcount = 0
 
 
-dns_message.question.qname  = "www.potentissimo.com"
+dns_message.question.qname  = "www.github.com"
 dns_message.question.qtype  = QTYPE_VALUES.A
 dns_message.question.qclass = QCLASS_VALUES.IN
 
@@ -29,7 +34,6 @@ msg_byte_length = len(encoded_dns_message)
 print(dns_message.question.length())
 print(f"byte size: {msg_byte_length}. encoded message: {encoded_dns_message}")
 print(dns_message.length())
-exit(1)
 if msg_byte_length <= 512:
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
@@ -38,12 +42,14 @@ if msg_byte_length <= 512:
         data, addr = sock.recvfrom(4096)
         print(f"Ricevuto {len(data)} byte da {addr}")
         print(f"Contenuto: {data}")
+        res = DnsMessage()
+        res.decode(data)
+        res.hex_dump()
     except Exception as e:
         print(f"Errore: {e}")
     finally:
         sock.close()
-
-if 1==1:
+else:
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     try:

@@ -6,14 +6,18 @@ from dnsway.dns.message.type import int16, int32
 
 class ResourceRecordMessage(DnsWaySerializer):
 
-    def __init__(self, label):
+    def __init__(self, header, label):
+        self.header = header
         self.rrformat_list = [ResourceRecordFormat()]
         super().__init__(label=f'RRMessage - {label}')
 
 
     def encode(self) -> bytearray:
         return super().encode(*self.rrformat_list)
+    
 
+    def decode(self, data:bytearray, offset:int) -> int:
+        return super().decode(data, offset, *self.rrformat_list)
 
 
 class ResourceRecordFormat(DnsWaySerializer):
@@ -24,7 +28,7 @@ class ResourceRecordFormat(DnsWaySerializer):
         self.__class_value  :   int16         =     int16()             # rr format class
         self.__ttl          :   int32         =     int32()             # unsigned 32 bit value, represent the maximum cachable time of the resource
         self.__rdata_length :   int16         =     int16()             # represent the length (in octets) of rdata section
-        self.__rdata        :   RRecordData   =     RRecordData()       # rdata class object
+        self.__rdata        :   RRecordData   =     RRecordData(rdata_length=self.rdata_length, label='RRecordData')       # rdata class object
 
         super().__init__(label='ResourceRecordFormat')
 
@@ -87,7 +91,11 @@ class ResourceRecordFormat(DnsWaySerializer):
 
     def encode(self, /) -> bytearray:
         return super().encode(self.name, self.type_value, self.class_value, self.ttl, self.rdata_length, self.rdata)
-
     
-    # def decode(self, msg_byte_stream):
-    #     return super().decode(msg_byte_stream)
+
+    def decode(self, data:bytearray, offset:int, /) -> int:
+        k =  super().decode(data, offset, self.name, self.type_value, self.class_value, self.ttl, self.rdata_length, self.rdata)
+        #print("RESOURCE DECODED")
+        return k
+    
+    

@@ -18,14 +18,23 @@ class int16(int, DnsWaySerializer):
         self.__value = value & 0xFFFF
 
 
-    def encode(self):
+    def encode(self) -> bytearray:
         return self.value.to_bytes(length=2, byteorder='big')
-            
+    
+    
+    def decode(self, data:bytearray, offset:int) -> int:
+        data = data[offset:offset+2]
+        if len(data) == 0: return 0
+        # print(f"bytes to decode: {data}")
+        self.value = int.from_bytes(data, byteorder='big')
+        return 2
 
-    def __str__(self):
+
+    def __str__(self) -> str:
         return str(self.value)
     
-    def __repr__(self):
+    
+    def __repr__(self) -> str:
         return self.__str__()
 
 
@@ -49,12 +58,21 @@ class int32(DnsWaySerializer):
 
     def encode(self) -> bytearray:
         return self.value.to_bytes(length=4, byteorder='big')
+    
+
+    def decode(self, data:bytearray, offset) -> int:
+        data = data[offset:offset+4]
+        if len(data) == 0: return 0
+        # print(f"bytes to decode: {data}")
+        self.value = int.from_bytes(data, byteorder='big')
+        return 4
 
     
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.value)
     
-    def __repr__(self):
+    
+    def __repr__(self) -> str:
         return self.__str__()
 
     
