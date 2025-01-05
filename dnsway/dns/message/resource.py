@@ -6,9 +6,9 @@ from dnsway.dns.message.type import int16, int32
 
 class ResourceRecordMessage(DnsWaySerializer):
 
-    def __init__(self, header, label):
-        self.header = header
-        self.rrformat_list = [ResourceRecordFormat()]
+    def __init__(self, count:int16, label):
+        self.count = count
+        self.rrformat_list = []
         super().__init__(label=f'RRMessage - {label}')
 
 
@@ -17,6 +17,8 @@ class ResourceRecordMessage(DnsWaySerializer):
     
 
     def decode(self, data:bytearray, offset:int) -> int:
+        self.rrformat_list = [ResourceRecordFormat() for _ in range(self.count.value)]
+        # print(f"In ResourceRecordMessage decode. Length: {len(self.rrformat_list)}")
         return super().decode(data, offset, *self.rrformat_list)
 
 
@@ -28,9 +30,12 @@ class ResourceRecordFormat(DnsWaySerializer):
         self.__class_value  :   int16         =     int16()             # rr format class
         self.__ttl          :   int32         =     int32()             # unsigned 32 bit value, represent the maximum cachable time of the resource
         self.__rdata_length :   int16         =     int16()             # represent the length (in octets) of rdata section
-        self.__rdata        :   RRecordData   =     RRecordData(rdata_length=self.rdata_length, label='RRecordData')       # rdata class object
+        self.__rdata        :   RRecordData   =     RRecordData(type_value=self.type_value, class_value=self.class_value, rdata_length=self.rdata_length, label='RRecordData')       # rdata class object
 
         super().__init__(label='ResourceRecordFormat')
+
+    # TODO: per type value e class value (che in realta' sono enum) dobbiamo ritornare 
+    # nel getter un oggetto enum valorizzato correttamente e non int16
 
 
     @property
@@ -95,7 +100,9 @@ class ResourceRecordFormat(DnsWaySerializer):
 
     def decode(self, data:bytearray, offset:int, /) -> int:
         k =  super().decode(data, offset, self.name, self.type_value, self.class_value, self.ttl, self.rdata_length, self.rdata)
-        #print("RESOURCE DECODED")
+        # print("RESOURCE DECODED")
+        # print("domain name:",self.name.domain_name)
+        # print("TTL: ", self.ttl.value)
         return k
     
     

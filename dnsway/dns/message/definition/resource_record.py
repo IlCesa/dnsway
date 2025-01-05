@@ -1,3 +1,4 @@
+from dnsway.dns.message.definition.domain_name import DomainName
 from dnsway.dns.message.dns_serialize import DnsWaySerializer
 from enum import Enum
 
@@ -44,22 +45,46 @@ class QCLASS_VALUES(Enum):
 
 class RRecordData(DnsWaySerializer):
 
-    def __init__(self, rdata_length:int16, label):
-        super().__init__(label)
+    def __init__(self, type_value:int16, class_value:int16, rdata_length:int16, label):
+        self.type_value = type_value
+        self.class_value = class_value
         self.rdata_length = rdata_length
+        self.resource_record = None
+
+        super().__init__(label)
     
+
     def encode(self):
-        return bytearray()
+        return bytearray() if self.resource_record is None else self.resource_record.encode()
 
     
     def decode(self, data:bytearray, offset:int) -> int:
-        data = data[offset:]
-        if len(data) == 0:
-            return 0
-        print("IN RRECORD DATA DECODE PHASE")
-        print("rdata length",self.rdata_length)
-        print("RRRECORDDATA: ",data)
-        print("------------")
+        #original_data = bytearray(data)
+        #data = data[offset:]
+        # print("owndata:",data)
+        # print("IN RRECORD DATA DECODE PHASE")
+        # print("rdata length",self.rdata_length)
+        # print("RRRECORDDATA: ",data)
+        # print("------------")
+        if len(data) == 0: return 0
+
+        try:
+            type_value = QTYPE_VALUES(self.type_value.value)
+            class_value = QCLASS_VALUES(self.class_value.value)
+        except ValueError:
+            print(f"error:{self.type_value.value},{self.class_value.value}")
+            #TODO: raise specific error here
+            return 0 #for now
+        
+        if type_value == QTYPE_VALUES.A:
+            self.resource_record = ARecord()
+        elif type_value == QTYPE_VALUES.CNAME:
+            self.resource_record = CNameRecord()
+        else:
+            raise Exception("QTYPE NOT SUPPORTED YET.")
+        
+        self.resource_record.decode(data,offset) 
+
         return self.rdata_length.value
 
 
@@ -67,7 +92,7 @@ class WKSRecord():
     pass
 
 
-class ARecord(RRecordData):
+class ARecord(DnsWaySerializer):
     
     def __init__(self):
         self.__ip_address = bytearray([0x00,0x00,0x00,0x00])
@@ -89,7 +114,15 @@ class ARecord(RRecordData):
         return self.ip_address
     
 
-    def decode(self, data:bytearray):
+    def decode(self, data:bytearray,offset:int):
+        data = bytearray(data[offset:])
+        ip_str = ''
+        for k in range(0,4):
+            octet = data.pop(0)
+            ip_str = ip_str + f"{octet}."
+            self.ip_address[k] = octet
+        
+        print(ip_str)
         return 4
 
 
@@ -102,15 +135,33 @@ class ARecord(RRecordData):
 #################################
 
 
-class CNameRecord():
-    def __init__(self, alias_name:str):
-        self.alias_name = bytearray([0x00,0x00,0x00,0x00])
-        self.set_alias_name(alias_name)
+class CNameRecord(DnsWaySerializer):
+    def __init__(self):
+        self.__alias_name = DomainName()
     
 
-    def set_alias_name(self, alias_name:str) -> None:
-        pass
-        #self.alias_name = domain_name_to_bytes_definition(alias_name)
+    @property
+    def alias_name(self):
+        return self.__alias_name
+    
+
+    @alias_name.setter
+    def alias_name(self, name: str):
+        self.__alias_name.domain_name = name
+
+
+    def encode(self, /):
+        return self.alias_name.encode()
+    
+
+    def decode(self, data, offset):
+        # print("in decode cname")
+        k =  self.alias_name.decode(data, offset)
+        # print(self.alias_name.domain_name)
+        return k
+
+    
+
 
 
 class HInfoRecord():

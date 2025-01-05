@@ -43,10 +43,12 @@ class DomainName(DnsWaySerializer):
         while data[i] != 0x00:
             is_a_ptr = (data[i] & 0xC0) == 0xC0
             if is_a_ptr:
+                if not ptr_found: #se un puntatore è stato gia' trovato non deve incrementare i byte consumati.
+                    consumed_byte = consumed_byte + 2
                 ptr_found = True
                 ptr_byte_index = int.from_bytes(data[i:i+2], byteorder='big') & 0x3FFF
+                # print("IS A PTR:",data[i],"byte index:",ptr_byte_index)
                 data = original_data[ptr_byte_index:]
-                consumed_byte = consumed_byte + 2
                 i = 0
             else:
                 subdomain_length = data[i]
@@ -59,6 +61,8 @@ class DomainName(DnsWaySerializer):
                 self.domain_name += '.'                
         if not ptr_found:
             consumed_byte = consumed_byte + 1 # the null octet
+        # print("decoded name:",self.domain_name)
+        # print("consumed byte:",consumed_byte)
         return consumed_byte
 
         '''name_bytes = bytearray()

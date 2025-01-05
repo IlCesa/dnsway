@@ -10,9 +10,9 @@ class DnsMessage(DnsWaySerializer):
     def __init__(self):
         self.header     : HeaderMessage          =  HeaderMessage()
         self.question   : QuestionMessage        =  QuestionMessage()
-        self.answer     : ResourceRecordMessage  =  ResourceRecordMessage(header=self.header, label='Answer')
-        self.autorithy  : ResourceRecordMessage  =  ResourceRecordMessage(header=self.header, label='Autorithy')
-        self.additional : ResourceRecordMessage  =  ResourceRecordMessage(header=self.header, label='Additional')
+        self.answer     : ResourceRecordMessage  =  ResourceRecordMessage(count=self.header.ancount, label='Answer')
+        self.autorithy  : ResourceRecordMessage  =  ResourceRecordMessage(count=self.header.nscount, label='Autorithy')
+        self.additional : ResourceRecordMessage  =  ResourceRecordMessage(count=self.header.arcount, label='Additional')
         
         super().__init__(label = 'DnsMessage')
 

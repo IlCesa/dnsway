@@ -156,11 +156,11 @@ class HeaderMessage(DnsWaySerializer):
     
     def decode(self, data:bytearray, offset:int) -> int:
         k =  super().decode(data, offset, self.id, self.flags, self.qdcount, self.ancount, self.nscount, self.arcount)
-        '''print("answercount:",self.ancount,"-----------")
+        print("answercount:",self.ancount,"-----------")
         print("QDCOUNT:",self.qdcount,"-----------")
         print("nscount:",self.nscount,"-----------")
         print("arcount:",self.arcount,"-----------")
-        print("HEADER DECODED")'''
+        print("HEADER DECODED")
         return k
 
 

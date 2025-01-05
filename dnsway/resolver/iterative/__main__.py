@@ -21,7 +21,7 @@ dns_message.header.nscount = 0
 dns_message.header.arcount = 0
 
 
-dns_message.question.qname  = "www.github.com"
+dns_message.question.qname  = "www.facebook.com"
 dns_message.question.qtype  = QTYPE_VALUES.A
 dns_message.question.qclass = QCLASS_VALUES.IN
 
