@@ -23,6 +23,7 @@ class QTYPE_VALUES(Enum):
     MINFO           =   0xE     # mailbox or mail list information
     MX              =   0xF     # mail exchange
     TXT             =   0x10    # text strings
+    AAAA            =   0x1C    # ipv6 host address
     AXFR            =   0xFC    # A request for a transfer of an entire zone
     MAILB           =   0xFD    # A request for mailbox-related records (MB, MG or MR)
     MAILA           =   0xFE    # A request for mail agent RRs (Obsolete - see MX)
@@ -78,9 +79,14 @@ class RRecordData(DnsWaySerializer):
         
         if type_value == QTYPE_VALUES.A:
             self.resource_record = ARecord()
+        elif type_value == QTYPE_VALUES.AAAA:
+            self.resource_record = AAAARecord()
         elif type_value == QTYPE_VALUES.CNAME:
             self.resource_record = CNameRecord()
+        elif type_value == QTYPE_VALUES.NS:
+            self.resource_record = NSRecord()
         else:
+            print(type_value)
             raise Exception("QTYPE NOT SUPPORTED YET.")
         
         self.resource_record.decode(data,offset) 
@@ -121,13 +127,54 @@ class ARecord(DnsWaySerializer):
             octet = data.pop(0)
             ip_str = ip_str + f"{octet}."
             self.ip_address[k] = octet
-        
+        ip_str = ip_str[:-1]
         print(ip_str)
         return 4
 
 
     def __str__(self) -> str:
         return self.ip_address.__str__()
+    
+
+class AAAARecord(DnsWaySerializer):
+    
+    def __init__(self):
+        self.__ipv6_address = bytearray([0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00])
+    
+
+    @property
+    def ipv6_address(self):
+        return self.__ipv6_address
+
+
+    @ipv6_address.setter
+    def ip_address(self, ip_address:str):
+        ip_decimal_list = ip_address.split(':')
+        for ip_decimal,i in enumerate(ip_decimal_list):
+            self.ipv6_address[i] = int(ip_decimal)
+    
+
+    def encode(self, /) -> bytearray:
+        return self.ipv6_address
+    
+
+    def decode(self, data:bytearray,offset:int):
+        data = bytearray(data[offset:])
+        ip_str = ''
+        for k in range(0,16,2):
+            block = int.from_bytes(data[k:k+1],byteorder='big')
+            ip_str = ip_str + f"{hex(block)[2:]}:"
+            self.ipv6_address[k] = data[k]
+            self.ip_address[k+1] = data[k+1]
+        
+        ip_str = ip_str[:-1]
+        print(ip_str)
+        return 16
+
+
+    def __str__(self) -> str:
+        return self.ip_address.__str__()
+    
 
 
 #################################
@@ -158,10 +205,7 @@ class CNameRecord(DnsWaySerializer):
         # print("in decode cname")
         k =  self.alias_name.decode(data, offset)
         # print(self.alias_name.domain_name)
-        return k
-
-    
-
+        return k 
 
 
 class HInfoRecord():
@@ -172,8 +216,28 @@ class MXRecord():
     pass
 
 
-class NSRecord():
-    pass
+class NSRecord(DnsWaySerializer):
+    def __init__(self):
+        self.__alias_name = DomainName()
+    
+
+    @property
+    def alias_name(self):
+        return self.__alias_name
+    
+
+    @alias_name.setter
+    def alias_name(self, name: str):
+        self.__alias_name.domain_name = name
+
+
+    def encode(self, /):
+        return self.alias_name.encode()
+    
+
+    def decode(self, data, offset):
+        k =  self.alias_name.decode(data, offset)
+        return k 
 
 
 class PTRRecord():

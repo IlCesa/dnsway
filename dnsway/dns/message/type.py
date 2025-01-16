@@ -38,7 +38,6 @@ class int16(int, DnsWaySerializer):
         return self.__str__()
 
 
-
 class int32(DnsWaySerializer):
 
     def __init__(self, value = 0x0):
