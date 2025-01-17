@@ -1,6 +1,6 @@
 from dnsway.dns.message.definition.resource_record import QCLASS_VALUES, QTYPE_VALUES
 from dnsway.dns.message.header import OPCODE_TYPE, QUERY_TYPE, RCODE_TYPE
-from dnsway.dns.message.dns_message import DnsMessage
+from dnsway.dns.message.dns_message import DnsMessage, DnsMessageBuilder
 import socket
 
 
@@ -17,23 +17,30 @@ import sys
 
 # endianness = sys.byteorder
 # print(f"L'endianness del sistema è: {endianness}")
-
-dns_message = DnsMessage()
-dns_message.header.set_query_type(query_type=QUERY_TYPE.QUERY)
-dns_message.header.set_opcode(opcode_type=OPCODE_TYPE.QUERY)
-dns_message.header.set_aa(False)
-dns_message.header.set_tc(False)
-dns_message.header.set_rd(True)
-dns_message.header.set_ra(True)
-dns_message.header.qdcount = 1
-dns_message.header.ancount = 0
-dns_message.header.nscount = 0
-dns_message.header.arcount = 0
+dns_message = DnsMessageBuilder().set_message_type(QUERY_TYPE.QUERY)\
+                                 .set_opcode(opcode_type=OPCODE_TYPE.QUERY)\
+                                 .enable_recursion_desired()\
+                                 .set_question("www.google.com",QTYPE_VALUES.CNAME,QCLASS_VALUES.IN)\
+                                 .build()
+#print(dns_message.hex_dump())
 
 
-dns_message.question.qname  = "www.google.com"
-dns_message.question.qtype  = QTYPE_VALUES.AAAA
-dns_message.question.qclass = QCLASS_VALUES.IN
+# dns_message = DnsMessage()
+# dns_message.header.set_query_type(query_type=QUERY_TYPE.QUERY)
+# dns_message.header.set_opcode(opcode_type=OPCODE_TYPE.QUERY)
+# dns_message.header.set_aa(False)
+# dns_message.header.set_tc(False)
+# dns_message.header.set_rd(True)
+# dns_message.header.set_ra(True)
+# dns_message.header.qdcount = 1
+# dns_message.header.ancount = 0
+# dns_message.header.nscount = 0
+# dns_message.header.arcount = 0
+
+
+# dns_message.question.qname  = "www.google.com"
+# dns_message.question.qtype  = QTYPE_VALUES.AAAA
+# dns_message.question.qclass = QCLASS_VALUES.IN
 
 dns_message.hex_dump()
 
