@@ -36,12 +36,12 @@ class QuestionMessage(DnsWaySerializer):
 
     @qtype.setter
     def qtype(self, qtype:QTYPE_VALUES):
-        self.__qtype.value = qtype.value
+        self.qtype.value = qtype.value
 
 
     @qclass.setter
     def qclass(self, qclass:QCLASS_VALUES):
-        self.__qclass.value = qclass.value
+        self.qclass.value = qclass.value
 
     
     def encode(self) -> bytearray:

@@ -31,7 +31,7 @@ class QTYPE_VALUES(Enum):
 
 
 class QCLASS_VALUES(Enum):
-
+    
     IN              =   0x1     # the Internet
     CS              =   0x2     # the CSNET class (Obsolete - used only for examples in some obsolete RFCs)
     CH              =   0x3     # the CHAOS class

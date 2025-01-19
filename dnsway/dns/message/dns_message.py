@@ -32,12 +32,12 @@ class DnsMessageBuilder():
         self.__dns_message = DnsMessage()
 
     
-    def enable_recursion_desired(self):
+    def enable_rd(self):
         self.__dns_message.header.set_rd(True)
         return self
     
 
-    def enable_recursion_available(self, ra_flag:bool):
+    def enable_ra(self, ra_flag:bool):
         self.__dns_message.header.set_ra(True)
         return self
     
@@ -74,14 +74,15 @@ class DnsMessageBuilder():
         self.__dns_message.header.set_aa(True)
         return self
     
-    def set_question(self, domain_name:str, qtype:QTYPE_VALUES, qclass:QCLASS_VALUES):
+    
+    def set_question(self, domain_name:str, qtype:str, qclass:str):
         try:
             self.__dns_message.question.qname  = domain_name
-            self.__dns_message.question.qtype  = qtype
-            self.__dns_message.question.qclass = qclass
+            self.__dns_message.question.qtype  = QTYPE_VALUES[qtype]
+            self.__dns_message.question.qclass = QCLASS_VALUES[qclass]
             self.__dns_message.header.qdcount = 1
-        except:
-            pass
+        except Exception as e:
+            print(e)
         return self
 
     def build(self) -> DnsMessage:
