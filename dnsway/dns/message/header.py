@@ -42,6 +42,10 @@ class HeaderMessage(DnsWaySerializer):
     
     QUERY_TYPE_SHIFT_BITS   =     15
     OPCODE_SHIFT_BITS       =     11
+    AA_SHIFT_BITS           =     10
+    TC_SHIFT_BITS           =     9
+    RD_SHIFT_BITS           =     8
+    RA_SHIFT_BITS           =     7
     RCODE_SHIFT_BITS        =     0
     
     def __init__(self):
@@ -83,51 +87,96 @@ class HeaderMessage(DnsWaySerializer):
     @property
     def arcount(self):
         return self.__arcount
+    
+    # HEADER BLOCK PROPERTIES
 
+    @property
+    def query_type(self) -> QUERY_TYPE:
+        qr_value = (self.flags.value >> self.QUERY_TYPE_SHIFT_BITS) & 1
+        return QUERY_TYPE(qr_value) 
+
+
+    @property
+    def opcode(self):
+        opcode_value = (self.flags.value >> self.OPCODE_SHIFT_BITS) & 0xF
+        return OPCODE_TYPE(opcode_value) 
+
+
+    @property
+    def aa(self):
+        return (self.flags.value >> self.AA_SHIFT_BITS) & 1
+
+
+    @property
+    def tc(self):
+        return (self.flags.value >> self.TC_SHIFT_BITS) & 1
+
+
+    @property
+    def rd(self):
+        return (self.flags.value >> self.RD_SHIFT_BITS) & 1
+
+
+    @property
+    def ra(self):
+        return (self.flags.value >> self.RA_SHIFT_BITS) & 1
+
+
+    @property
+    def rcode(self):
+        rcode_value = self.flags.value & 0xF
+        return RCODE_TYPE(rcode_value)
+
+    #HEADER BLOCK END
 
     @id.setter
     def id(self,id:int):
         self.id.value = id
 
-
-    def set_query_type(self, query_type:QUERY_TYPE) -> None:
+    @query_type.setter
+    def query_type(self, query_type:QUERY_TYPE) -> None:
         self.__flags.value = self.__flags.value & 0x7FFF
         if query_type == QUERY_TYPE.RESPONSE:
-            self.__flags.value = self.__flags.value | 0x8000
+            self.__flags.value = self.__flags.value | (0x1 << self.QUERY_TYPE_SHIFT_BITS)
     
 
-    def set_opcode(self, opcode_type:OPCODE_TYPE):
+    @opcode.setter
+    def opcode(self, opcode_type:OPCODE_TYPE):
         self.__flags.value = self.__flags.value & 0x87FF
         self.__flags.value = self.__flags.value | (opcode_type.value << self.OPCODE_SHIFT_BITS)
 
 
-    def set_aa(self, aa_flag:bool):
+    @aa.setter
+    def aa(self, aa_flag:bool):
         self.__flags.value = self.__flags.value & (0xFBFF)
         if aa_flag:
-            self.__flags.value = self.__flags.value | (0x1 << 10)
+            self.__flags.value = self.__flags.value | (0x1 << self.AA_SHIFT_BITS)
+       
             
-
-    def set_tc(self, tc_flag:bool):
+    @tc.setter
+    def tc(self, tc_flag:bool):
         self.__flags.value = self.__flags.value & (0xFDFF)
         if tc_flag:
-            self.__flags.value = self.__flags.value | (0x1 << 9)     
+            self.__flags.value = self.__flags.value | (0x1 << self.TC_SHIFT_BITS)     
 
 
-    def set_rd(self, rd_flag:bool):
+    @rd.setter
+    def rd(self, rd_flag:bool):
         self.__flags.value = self.__flags.value & (0xFEFF)
         if rd_flag:
-            self.__flags.value = self.__flags.value | (0x1 << 8)
+            self.__flags.value = self.__flags.value | (0x1 << self.RD_SHIFT_BITS)
 
-
-    def set_ra(self, ra_flag:bool):
+    @ra.setter
+    def ra(self, ra_flag:bool):
         self.__flags.value = self.__flags.value & (0xFF7F)
         if ra_flag:
-            self.__flags.value = self.__flags.value | (0x1 << 7)       
+            self.__flags.value = self.__flags.value | (0x1 << self.RA_SHIFT_BITS)       
 
 
-    def set_rcode(self, rcode_type:RCODE_TYPE):
+    @rcode.setter
+    def rcode(self, rcode_type:RCODE_TYPE):
         self.__flags.value = self.__flags.value & 0xFFF8
-        self.__flags.value = self.__flags.value | (rcode_type.value << 0)
+        self.__flags.value = self.__flags.value | (rcode_type.value << self.RCODE_SHIFT_BITS)
 
 
     @qdcount.setter
@@ -156,11 +205,11 @@ class HeaderMessage(DnsWaySerializer):
     
     def decode(self, data:bytearray, offset:int) -> int:
         k =  super().decode(data, offset, self.id, self.flags, self.qdcount, self.ancount, self.nscount, self.arcount)
-        print("answercount:",self.ancount,"-----------")
+        '''print("answercount:",self.ancount,"-----------")
         print("QDCOUNT:",self.qdcount,"-----------")
         print("nscount:",self.nscount,"-----------")
         print("arcount:",self.arcount,"-----------")
-        print("HEADER DECODED")
+        print("HEADER DECODED")'''
         return k
 
 
