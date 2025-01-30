@@ -1,14 +1,14 @@
-
+from dnsway.dns.message.dns_message import DnsMessage
 from abc import abstractmethod
 from enum import Enum
 import socket
 
-from dnsway.dns.message.dns_message import DnsMessage
+
 
 
 class TRANSPORT_MODE(Enum):
-    DATAGRAM            = 0x01      
-    VIRTUAL_CIRCUIT     = 0x02              
+    DATAGRAM            =   0x01      
+    VIRTUAL_CIRCUIT     =   0x02              
 
 
 class DnsWayTransport():
@@ -47,7 +47,7 @@ class DnsWayUdpTransport(DnsWayTransport):
 
 
     def recv(self):
-        print("waiting msg response")
+        # print("waiting msg response")
         data, addr = self.socket.recvfrom(4096)
         '''TODO: change to builder pattern'''
         dns_message = DnsMessage()

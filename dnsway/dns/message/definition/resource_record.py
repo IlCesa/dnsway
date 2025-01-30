@@ -102,6 +102,7 @@ class ARecord(DnsWaySerializer):
     
     def __init__(self):
         self.__ip_address = bytearray([0x00,0x00,0x00,0x00])
+        self.__ip_address_str = ''
 
 
     @property
@@ -128,19 +129,20 @@ class ARecord(DnsWaySerializer):
             ip_str = ip_str + f"{octet}."
             self.ip_address[k] = octet
         ip_str = ip_str[:-1]
+        self.__ip_address_str = ip_str
         print(ip_str)
         return 4
 
 
     def __str__(self) -> str:
-        return self.ip_address.__str__()
+        return self.__ip_address_str.__str__()
     
 
 class AAAARecord(DnsWaySerializer):
     
     def __init__(self):
         self.__ipv6_address = bytearray([0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00])
-    
+        self.__ipv6_address_str = ''
 
     @property
     def ipv6_address(self):
@@ -168,12 +170,13 @@ class AAAARecord(DnsWaySerializer):
             self.ip_address[k+1] = data[k+1]
         
         ip_str = ip_str[:-1]
+        self.__ipv6_address_str = ip_str
         print(ip_str)
         return 16
 
 
     def __str__(self) -> str:
-        return self.ip_address.__str__()
+        return self.__ipv6_address_str.__str__()
     
 
 

@@ -24,6 +24,10 @@ class DnsMessage(DnsWaySerializer):
     
     def decode(self, data:bytearray, offset:int = 0, /) -> int:
         return super().decode(data, offset, self.header, self.question, self.answer, self.autorithy, self.additional)
+    
+
+class DnsMessageBuilderNew():
+    pass
 
 
 class DnsMessageBuilder():
@@ -33,18 +37,18 @@ class DnsMessageBuilder():
 
     
     def enable_rd(self):
-        self.__dns_message.header.set_rd(True)
+        self.__dns_message.header.rd = True
         return self
     
 
     def enable_ra(self, ra_flag:bool):
-        self.__dns_message.header.set_ra(True)
+        self.__dns_message.header.ra = True
         return self
     
 
     def set_opcode(self, opcode_type:OPCODE_TYPE):
         try:
-            self.__dns_message.header.set_opcode(opcode_type)
+            self.__dns_message.header.opcode = opcode_type
         except:
             pass
         return self
@@ -52,7 +56,7 @@ class DnsMessageBuilder():
 
     def set_message_type(self, query_type:QUERY_TYPE):
         try:
-            self.__dns_message.header.set_query_type(query_type)
+            self.__dns_message.header.query_type = query_type
         except:
             pass
         return self
@@ -64,14 +68,14 @@ class DnsMessageBuilder():
     
     def set_rcode(self,rcode_type:RCODE_TYPE):
         try:
-            self.__dns_message.header.set_rcode(rcode_type)
+            self.__dns_message.header.rcode = rcode_type
         except:
             pass
         return self
     
 
     def enbale_aa(self, aa_flag:bool):
-        self.__dns_message.header.set_aa(True)
+        self.__dns_message.header.aa = True
         return self
     
     
