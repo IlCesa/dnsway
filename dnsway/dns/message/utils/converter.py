@@ -2,9 +2,10 @@
 from dnsway.dns.message.definition.resource_record import QCLASS_VALUES, QTYPE_VALUES
 from dnsway.dns.message.dns_message import DnsMessage
 from dnsway.dns.message.header import OPCODE_TYPE, QUERY_TYPE, RCODE_TYPE
-from dnsway.dns.message.view.dns_message_view import DnsMessageView, HeaderView, QuestionView, RRecordView
+from dnsway.dns.message.utils.dns_message_view import DnsMessageView, HeaderView, QuestionView, RRecordView
 
-
+#TODO: chiaramente serve un mini refactoring qui dividendo i converter per header, question e rrformatlist.
+# per ora funziona
 class DnsMessageConverter():
     def raw_msg_to_view(self, dns_message:DnsMessage):
         header_dns = dns_message.header

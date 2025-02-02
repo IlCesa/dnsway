@@ -13,3 +13,8 @@ class DnsWayDumpingNotSupported(Exception):
 class DnsWayDecoderNotSupported(Exception):
     def __init__(self, *args):
         super().__init__(*args)
+
+
+class DnsWayMultipleQuestionNotSupported(Exception):
+    def __init__(self, *args):
+        super().__init__(*args)

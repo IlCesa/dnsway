@@ -50,9 +50,18 @@ class RRecordData(DnsWaySerializer):
         self.type_value = type_value
         self.class_value = class_value
         self.rdata_length = rdata_length
-        self.resource_record = None
+        self.__resource_record = None
 
         super().__init__(label)
+
+    @property
+    def resource_record(self):
+        return self.__resource_record
+    
+    
+    @resource_record.setter
+    def resource_record(self, resource_record):
+        self.__resource_record = resource_record
     
 
     def encode(self):

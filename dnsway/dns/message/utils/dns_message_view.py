@@ -50,6 +50,7 @@ class DnsMessageView():
      
      def __str__(self):
            str="--- HEADER SECTION ---\n\n"
+           str+=f"ID:{self.header.id} QR:{self.header.qr.name} OPCODE:{self.header.opcode_type.name} RCODE:{self.header.rcode_type.name} AA:{self.header.aa} RA:{self.header.ra} RD:{self.header.rd} TC:{self.header.tc} QDCOUNT:{self.header.qdcount} ANCOUNT:{self.header.ancount} NSCOUNT:{self.header.nscount} ARCOUNT:{self.header.arcount}\n\n"
            str+="--- QUESTION SECTION ---\n\n"
            str+=f"{self.question.name} {self.question.type_Value.name} {self.question.class_value.name}\n\n"
            str+="--- ANSWER SECTION ---\n\n"

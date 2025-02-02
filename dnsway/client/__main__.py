@@ -1,10 +1,9 @@
 import argparse
 import sys
-
-from dnsway.dns.message.converter.converter import DnsMessageConverter
 from dnsway.dns.message.dns_message import DnsMessage, DnsMessageBuilder
 from dnsway.dns.message.header import OPCODE_TYPE, QUERY_TYPE
-from dnsway.dns.message.view.dns_message_view import DnsMessageView
+from dnsway.dns.message.utils.converter import DnsMessageConverter
+from dnsway.dns.message.utils.dns_message_view import DnsMessageView
 from dnsway.dns.transport.dns_transport import TRANSPORT_MODE, DnsWayTransport, DnsWayTransportFactory, DnsWayUdpTransport
 
 if __name__ == "__main__":

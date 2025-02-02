@@ -1,24 +1,34 @@
-import argparse
-import sys
+import asyncio
 
-def main():
-    parser = argparse.ArgumentParser(description="DNS Query Tool")
-    parser.add_argument("--qtype", choices=["A", "AAAA", "CNAME"], help="Il tipo di record dns",default='A')
-    parser.add_argument("--qclass", choices=["IN", "CH"], help="La classe DNS: IN (Internet) o CH (Chaos)", default='IN')
-    parser.add_argument("--mode", choices=["R", "I"], help="R=Recursive I=Iterative",default='R')
-    parser.add_argument("--resolver", type=str, help="L'indirizzo IP del resolver (richiesto solo in modalità recursive)", default='8.8.8.8')
-    parser.add_argument("--domain_name", type=str, help='Domain Name to resolve')
 
-    args,kargs = parser.parse_known_args()
-    print(kargs)
-    if args.mode == "I":
-        print("Il resolver sara' ignorato")
+class DnsWayUdpResolver():
+    HOST = '127.0.0.1'
+    PORT = 5353
 
-    print(f"TYPE: {args.qtype}")
-    print(f"CLASS: {args.qclass}")
-    print(f"MODE: {args.mode}")
-    if args.resolver:
-        print(f"RESOLVER: {args.resolver}")
+    async def start(self, asyncio_loop):
+        print(f"DnsWay Udp Resolver listening on: {self.HOST}:{self.PORT}")
+        transport, protocol = await asyncio_loop.create_datagram_endpoint(lambda: DnsWayUdpResolver(), local_addr=(self.HOST, self.PORT))
+        try:
+            await asyncio.Future()
+        finally:
+            transport.close()
+
+
+    def connection_made(self, transport):
+        self.transport = transport
+
+
+    def datagram_received(self, data, addr):
+        address, port = addr
+        print(address,port)
+        print(f"Ricevuto pacchetto da {addr}: {data.hex()}")
+        self.transport.sendto(b"ACK", addr)
+
+
+async def main():
+    loop = asyncio.get_running_loop()
+    await DnsWayUdpResolver().start(loop)
+
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dnsway.dns.message.definition.resource_record import QCLASS_VALUES, QTYPE_VALUES, RRecordData
 from dnsway.dns.message.definition.domain_name import DomainName
 from dnsway.dns.message.dns_serialize import DnsWaySerializer
@@ -8,8 +9,18 @@ class ResourceRecordMessage(DnsWaySerializer):
 
     def __init__(self, count:int16, label):
         self.count = count
-        self.rrformat_list = []
+        self.__rrformat_list = []
         super().__init__(label=f'RRMessage - {label}')
+
+
+    @property
+    def rrformat_list(self) -> list:
+        return self.__rrformat_list
+    
+
+    # @rrformat_list.setter
+    # def rrfomat_list(self, rrformat:ResourceRecordFormat):
+    #     self.rrformat_list.append(rrformat)
 
 
     def encode(self) -> bytearray:
@@ -17,7 +28,7 @@ class ResourceRecordMessage(DnsWaySerializer):
     
 
     def decode(self, data:bytearray, offset:int) -> int:
-        self.rrformat_list = [ResourceRecordFormat() for _ in range(self.count.value)]
+        self.__rrformat_list = [ResourceRecordFormat() for _ in range(self.count.value)]
         # print(f"In ResourceRecordMessage decode. Length: {len(self.rrformat_list)}")
         return super().decode(data, offset, *self.rrformat_list)
 
@@ -33,9 +44,6 @@ class ResourceRecordFormat(DnsWaySerializer):
         self.__rdata        :   RRecordData   =     RRecordData(type_value=self.type_value, class_value=self.class_value, rdata_length=self.rdata_length, label='RRecordData')       # rdata class object
 
         super().__init__(label='ResourceRecordFormat')
-
-    # TODO: per type value e class value (che in realta' sono enum) dobbiamo ritornare 
-    # nel getter un oggetto enum valorizzato correttamente e non int16
 
 
     @property
@@ -89,9 +97,9 @@ class ResourceRecordFormat(DnsWaySerializer):
 
 
     @rdata.setter
-    def rdata(self) -> None:
-        self.rdata = None
-        self.rdata_length.value = self.rdata.byte_length()
+    def rdata(self, resource_record) -> None:
+        self.rdata.resource_record = resource_record
+        self.rdata_length.value = len(self.rdata.encode())
 
 
     def encode(self, /) -> bytearray:
