@@ -43,23 +43,23 @@ class DnsMessageBuilderNew():
             self.__dns_message.header.id = id
 
 
-    def __build_rrformat(self, name, type_value, class_value, ttl, rdata):
+    def __build_rrformat(self, name:str, type_value:str|QTYPE_VALUES, class_value:str|QCLASS_VALUES, ttl:int, rdata):
         rrformat = ResourceRecordFormat()
         rrformat.name = name
-        rrformat.type_value = QTYPE_VALUES[type_value]
-        rrformat.class_value = QCLASS_VALUES[class_value]
+        rrformat.type_value = QTYPE_VALUES[type_value] if type(type_value) == str else type_value
+        rrformat.class_value = QCLASS_VALUES[class_value] if type(type_value) == str else class_value
         rrformat.ttl = ttl
         rrformat.rdata = rdata
         return rrformat
     
 
-    def question(self, qname:str, qtype:str, qclass:str):
+    def question(self, qname:str, qtype:str|QTYPE_VALUES, qclass:str|QCLASS_VALUES):
         if self.__dns_message.header.qdcount == 1:
             raise DnsWayMultipleQuestionNotSupported()
         
         self.__dns_message.question.qname  = qname
-        self.__dns_message.question.qtype  = QTYPE_VALUES[qtype]
-        self.__dns_message.question.qclass = QCLASS_VALUES[qclass]
+        self.__dns_message.question.qtype  =  QTYPE_VALUES[qtype] if type(qtype) == str else qtype
+        self.__dns_message.question.qclass = QCLASS_VALUES[qclass] if type(qclass) == str else qclass
         self.__dns_message.header.qdcount = 1
 
         return self

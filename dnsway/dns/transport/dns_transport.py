@@ -4,8 +4,6 @@ from enum import Enum
 import socket
 
 
-
-
 class TRANSPORT_MODE(Enum):
     DATAGRAM            =   0x01      
     VIRTUAL_CIRCUIT     =   0x02              

@@ -1,5 +1,9 @@
 import asyncio
 
+from dnsway.dns.message.dns_message import DnsMessage
+from dnsway.dns.message.utils.converter import DnsMessageConverter
+from dnsway.dns.message.utils.dns_message_view import DnsMessageView
+
 
 class DnsWayUdpResolver():
     HOST = '127.0.0.1'
@@ -21,8 +25,18 @@ class DnsWayUdpResolver():
     def datagram_received(self, data, addr):
         address, port = addr
         print(address,port)
-        print(f"Ricevuto pacchetto da {addr}: {data.hex()}")
-        self.transport.sendto(b"ACK", addr)
+        # print(f"Ricevuto pacchetto da {addr}: {data.hex()}")
+        # self.transport.sendto(b"ACK", addr)
+        print(type(data))
+
+        # simple logic here but this is a direct dependency, we should refactor using dependency injection
+        dns_message = DnsMessage()
+        dns_message.decode(data)
+        dns_message.hex_dump()
+        dns_message_view:DnsMessageView = DnsMessageConverter().raw_msg_to_view(dns_message)
+
+        # print(dns_message_view.question.name)
+
 
 
 async def main():
