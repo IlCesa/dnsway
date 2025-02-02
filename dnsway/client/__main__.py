@@ -1,6 +1,6 @@
 import argparse
 import sys
-from dnsway.dns.message.dns_message import DnsMessage, DnsMessageBuilder
+from dnsway.dns.message.dns_message import DnsMessage, DnsMessageBuilderNew
 from dnsway.dns.message.header import OPCODE_TYPE, QUERY_TYPE
 from dnsway.dns.message.utils.converter import DnsMessageConverter
 from dnsway.dns.message.utils.dns_message_view import DnsMessageView
@@ -17,12 +17,15 @@ if __name__ == "__main__":
     args, unk_args = parser.parse_known_args()
     #print(args)
 
-    dns_message = (DnsMessageBuilder()
-               .set_message_type(query_type=QUERY_TYPE.QUERY)
-               .set_opcode(opcode_type=OPCODE_TYPE.QUERY)
-               .set_question(domain_name=args.domain_name, qtype=args.qtype, qclass=args.qclass)
-               .enable_rd()
-               .build())
+    # dns_message = (DnsMessageBuilder()
+    #            .set_message_type(query_type=QUERY_TYPE.QUERY)
+    #            .set_opcode(opcode_type=OPCODE_TYPE.QUERY)
+    #            .set_question(domain_name=args.domain_name, qtype=args.qtype, qclass=args.qclass)
+    #            .enable_rd()
+    #            .build())
+    dns_message = (DnsMessageBuilderNew(qr=QUERY_TYPE.QUERY,opcode=OPCODE_TYPE.QUERY,rd=True)
+                   .question(qname=args.domain_name, qtype=args.qtype, qclass=args.qclass)
+                   .build())
     
     #print(dns_message.header.query_type)
 
