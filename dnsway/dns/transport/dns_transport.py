@@ -54,14 +54,15 @@ class DnsWayUdpTransport(DnsWayTransport):
 
 
 class DnsWayTcpTransport(DnsWayTransport):
-    def __init__(self, address:str, port:int):
+    def __init__(self, address:str, port:int, timeout:int):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.settimeout(timeout)
         self.socket.connect((address, port))
 
 
     def send(self, dns_message:DnsMessage):
         raw_msg_bytearray = dns_message.encode()
-        self.socket.sendall(raw_msg_bytearray.to_bytes(length=2, byteorder='big') + raw_msg_bytearray)
+        self.socket.sendall(len(raw_msg_bytearray).to_bytes(length=2, byteorder='big') + raw_msg_bytearray)
 
 
     def recv(self):
@@ -82,6 +83,9 @@ class DnsWayTcpTransport(DnsWayTransport):
             if bufsize >= msg_length:
                 break
         
+        dns_message = DnsMessage()
+        dns_message.decode(response)
+        return dns_message
 
 
 '''class DnsWayTransport():

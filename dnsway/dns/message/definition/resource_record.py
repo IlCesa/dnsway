@@ -218,6 +218,9 @@ class CNameRecord(DnsWaySerializer):
         k =  self.alias_name.decode(data, offset)
         # print(self.alias_name.domain_name)
         return k 
+    
+    def __str__(self):
+        return self.alias_name.domain_name
 
 
 class HInfoRecord():
@@ -250,6 +253,9 @@ class NSRecord(DnsWaySerializer):
     def decode(self, data, offset):
         k =  self.alias_name.decode(data, offset)
         return k 
+    
+    def __str__(self):
+        return self.alias_name.domain_name
 
 
 class PTRRecord():

@@ -1,6 +1,6 @@
 import argparse
 import sys
-from dnsway.dns.message.dns_message import DnsMessage, DnsMessageBuilderNew
+from dnsway.dns.message.dns_builder import DnsMessage, DnsMessageBuilderNew
 from dnsway.dns.message.header import OPCODE_TYPE, QUERY_TYPE
 from dnsway.dns.message.utils.converter import DnsMessageConverter
 from dnsway.dns.message.utils.dns_message_view import DnsMessageView
@@ -12,10 +12,10 @@ if __name__ == "__main__":
     parser.add_argument("--qtype", choices=["A", "AAAA", "CNAME"], help="question record qtype",default='A')
     parser.add_argument("--qclass", choices=["IN", "CH"], help="question record qclass", default='IN')
     parser.add_argument("--resolver", type=str, help="recursive resolver address [address]", default='8.8.8.8')
-    parser.add_argument("--port", type=int, help="recursive resolver port [port]", default=54)
+    parser.add_argument("--port", type=int, help="recursive resolver port [port]", default=53)
     parser.add_argument("--verbose", "-v", action="store_true", help="enable messages dumping")
     args, unk_args = parser.parse_known_args()
-    #print(args)
+    print(args)
 
     # dns_message = (DnsMessageBuilder()
     #            .set_message_type(query_type=QUERY_TYPE.QUERY)
@@ -27,6 +27,8 @@ if __name__ == "__main__":
                    .question(qname=args.domain_name, qtype=args.qtype, qclass=args.qclass)
                    .build())
     
+    dns_message.hex_dump()
+    
     #print(dns_message.header.query_type)
 
     dnsway_trasport = DnsWayTransportFactory().create_transport(transport_mode=TRANSPORT_MODE.DATAGRAM,
@@ -35,7 +37,7 @@ if __name__ == "__main__":
     
     dnsway_trasport.send(dns_message=dns_message)
     recv_dns_message:DnsMessage = dnsway_trasport.recv()
-
+    recv_dns_message.hex_dump()
     dns_message_view:DnsMessageView = DnsMessageConverter().raw_msg_to_view(recv_dns_message)
     
     print(dns_message_view)

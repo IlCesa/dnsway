@@ -21,7 +21,7 @@ class DomainName(DnsWaySerializer):
 
     def encode(self) -> bytearray:
         qname = bytearray()
-        subdomain_list = self.domain_name.split('.')
+        subdomain_list = list(filter(lambda x: x != '', self.domain_name.split('.')))
         for subdomain in subdomain_list:
             length_octet = len(subdomain) & 0x3F # mask to extract 6 bit only
             qname.append(length_octet)
