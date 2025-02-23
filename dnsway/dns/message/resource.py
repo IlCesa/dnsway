@@ -78,7 +78,7 @@ class ResourceRecordFormat(DnsWaySerializer):
 
     @name.setter
     def name(self, domain_name):
-        self.name.domain_name = domain_name
+        self.__name.domain_name = domain_name
 
 
     @type_value.setter
@@ -98,8 +98,13 @@ class ResourceRecordFormat(DnsWaySerializer):
 
     @rdata.setter
     def rdata(self, resource_record) -> None:
-        self.rdata.resource_record = resource_record
-        self.rdata_length.value = len(self.rdata.encode())
+        self.__rdata.resource_record = resource_record
+        self.__rdata_length.value = len(self.rdata.encode())
+
+    
+    @rdata_length.setter
+    def rdata_length(self, rdata_length:int):
+        self.rdata_length.value = rdata_length
 
 
     def encode(self, /) -> bytearray:

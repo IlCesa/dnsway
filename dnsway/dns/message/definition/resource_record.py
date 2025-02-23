@@ -54,8 +54,10 @@ class RRecordData(DnsWaySerializer):
 
         super().__init__(label)
 
+
     @property
     def resource_record(self):
+        print("getting rrrecord")
         return self.__resource_record
     
     
@@ -65,7 +67,13 @@ class RRecordData(DnsWaySerializer):
     
 
     def encode(self):
-        return bytearray() if self.resource_record is None else self.resource_record.encode()
+        if self.resource_record is None:
+            return bytearray()
+        else:
+            rr_encoded = self.resource_record.encode()
+            print("cname len",len(rr_encoded))
+            # self.rdata_length = len(rr_encoded)
+            return rr_encoded
 
     
     def decode(self, data:bytearray, offset:int) -> int:
@@ -98,9 +106,9 @@ class RRecordData(DnsWaySerializer):
             print(type_value)
             raise Exception("QTYPE NOT SUPPORTED YET.")
         
-        self.resource_record.decode(data,offset) 
+        return self.resource_record.decode(data,offset) 
 
-        return self.rdata_length.value
+        #return self.rdata_length.value
 
 
 class WKSRecord():
@@ -251,6 +259,7 @@ class NSRecord(DnsWaySerializer):
     
 
     def decode(self, data, offset):
+
         k =  self.alias_name.decode(data, offset)
         return k 
     

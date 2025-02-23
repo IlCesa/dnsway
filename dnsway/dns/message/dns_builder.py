@@ -50,13 +50,33 @@ class DnsMessageBuilderNew():
 
 
     def autorithy(self, name, type_value, class_value, ttl, rdata=None):
+        self.__dns_message.header.nscount = self.__dns_message.header.nscount.value+1
         self.__dns_message.autorithy.rrformat_list.append(self.__build_rrformat(name, type_value, class_value, ttl, rdata))
         return self
     
 
     def additional(self, name, type_value, class_value, ttl, rdata):
+        self.__dns_message.header.arcount = self.__dns_message.header.arcount.value+1
         self.__dns_message.additional.rrformat_list.append(self.__build_rrformat(name, type_value, class_value, ttl, rdata))
         return self
+    
+
+    # def answer(self, rrformat:ResourceRecordFormat):
+    #     self.__dns_message.header.ancount = self.__dns_message.header.ancount.value+1
+    #     self.__dns_message.answer.rrformat_list.append(rrformat)
+    #     return self
+
+
+    # def autorithy(self, rrformat:ResourceRecordFormat):
+    #     self.__dns_message.header.nscount = self.__dns_message.header.nscount.value+1
+    #     self.__dns_message.autorithy.rrformat_list.append(rrformat)
+    #     return self
+    
+
+    # def additional(self, rrformat:ResourceRecordFormat):
+    #     self.__dns_message.header.arcount = self.__dns_message.header.arcount.value+1
+    #     self.__dns_message.additional.rrformat_list.append(rrformat)
+    #     return self
 
 
     def build(self) -> DnsMessage:

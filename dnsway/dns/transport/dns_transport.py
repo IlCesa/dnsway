@@ -47,10 +47,9 @@ class DnsWayUdpTransport(DnsWayTransport):
     def recv(self):
         # print("waiting msg response")
         data, addr = self.socket.recvfrom(4096)
-        '''TODO: change to builder pattern'''
-        dns_message = DnsMessage()
-        dns_message.decode(data)
-        return dns_message
+        # dns_message = DnsMessage()
+        # dns_message.decode(data)
+        return DnsMessage.Decode(data)
 
 
 class DnsWayTcpTransport(DnsWayTransport):
@@ -83,24 +82,6 @@ class DnsWayTcpTransport(DnsWayTransport):
             if bufsize >= msg_length:
                 break
         
-        dns_message = DnsMessage()
-        dns_message.decode(response)
-        return dns_message
-
-
-'''class DnsWayTransport():
-    pass
-
-
-class DnsWayClientTransport():
-    pass
-
-
-class DnsWayIterativeServer():
-    # will receive a client request 
-    pass
-
-
-class DnsWayAutorithativeServer():
-    # will read and implement logic to give information about local zone
-    pass'''
+        # dns_message = DnsMessage()
+        # dns_message.decode(response)
+        return DnsMessage.Decode(response)

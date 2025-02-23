@@ -25,3 +25,10 @@ class DnsMessage(DnsWaySerializer):
     
     def decode(self, data:bytearray, offset:int = 0, /) -> int:
         return super().decode(data, offset, self.header, self.question, self.answer, self.autorithy, self.additional)
+    
+
+    @staticmethod
+    def Decode(data:bytearray) -> DnsMessage:
+        dns_message = DnsMessage()
+        dns_message.decode(data)
+        return dns_message

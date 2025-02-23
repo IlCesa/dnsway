@@ -4,8 +4,8 @@ from dnsway.dns.message.header import OPCODE_TYPE, QUERY_TYPE, RCODE_TYPE
 from dnsway.dns.message.dns_message import DnsMessage
 
 class HeaderView():
-
-        def __init__(self, id:int=0, qr:QUERY_TYPE=QUERY_TYPE.QUERY, opcode:OPCODE_TYPE=OPCODE_TYPE.QUERY,
+     
+     def __init__(self, id:int=0, qr:QUERY_TYPE=QUERY_TYPE.QUERY, opcode:OPCODE_TYPE=OPCODE_TYPE.QUERY,
                      rcode:RCODE_TYPE=RCODE_TYPE.NO_ERROR, aa:bool=False, ra:bool=False,
                      rd:bool=False, tc:bool=False, qdcount:int=0, ancount:int=0,
                      nscount:int=0, arcount:int=0):

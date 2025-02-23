@@ -1,5 +1,6 @@
 import abc
-from dnsway.server.domain.model import RootServer
+import random
+from dnsway.server.domain.resolver_model import RootServer
 
 
 class AbstractRootRepository():
@@ -21,7 +22,7 @@ class FileRootRepository(AbstractRootRepository):
     
 
     def get(self):
-        return self.rootserver_list[0]
+        return self.rootserver_list[random.randint(0, len(self.rootserver_list)-1)]
 
 
     def __parse(self):
