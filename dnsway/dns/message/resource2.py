@@ -1,5 +1,4 @@
 from __future__ import annotations
-import copy
 from dnsway.dns.message.definition.resource_record import QCLASS_VALUES, QTYPE_VALUES, RRecordData
 from dnsway.dns.message.definition.domain_name import DomainName
 from dnsway.dns.message.dns_serialize import DnsWaySerializer
@@ -99,7 +98,7 @@ class ResourceRecordFormat(DnsWaySerializer):
 
     @rdata.setter
     def rdata(self, resource_record) -> None:
-        self.__rdata.resource_record = copy.deepcopy(resource_record)
+        self.__rdata.resource_record = resource_record
         self.__rdata_length.value = len(self.rdata.encode())
 
     
@@ -115,8 +114,3 @@ class ResourceRecordFormat(DnsWaySerializer):
     def decode(self, data:bytearray, offset:int, /) -> int:
         #TODO: SPOSTARE QUI LA LOGICA DI FACTORY DI RDATA. RDATA DOVREBBE RESTARE SOLO COME ASTRAZIONE
         return super().decode(data, offset, self.name, self.type_value, self.class_value, self.ttl, self.rdata_length, self.rdata)
-        # k =  super().decode(data, offset, self.name, self.type_value, self.class_value, self.ttl, self.rdata_length, self.rdata)
-        # # print("RESOURCE DECODED")
-        # # print("domain name:",self.name.domain_name)
-        # # print("TTL: ", self.ttl.value)
-        # return k

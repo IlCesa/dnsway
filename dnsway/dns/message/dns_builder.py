@@ -5,8 +5,13 @@ from dnsway.dns.message.header import OPCODE_TYPE, QUERY_TYPE, RCODE_TYPE
 from dnsway.dns.message.resource import ResourceRecordFormat
 
 
-class DnsMessageBuilderNew():
-    def __init__(self, rd:bool=False, ra:bool=False, aa:bool=False, tc:bool=False, opcode:OPCODE_TYPE=OPCODE_TYPE.QUERY, qr:QUERY_TYPE=QUERY_TYPE.QUERY,
+class DnsMessageBuilderNew:
+
+    def __init__(self):
+        pass
+
+
+    def header(self, rd:bool=False, ra:bool=False, aa:bool=False, tc:bool=False, opcode:OPCODE_TYPE=OPCODE_TYPE.QUERY, qr:QUERY_TYPE=QUERY_TYPE.QUERY,
                  id:int=None, rcode:RCODE_TYPE=RCODE_TYPE.NO_ERROR):
         self.__dns_message = DnsMessage()
         self.__dns_message.header.query_type = qr
@@ -19,6 +24,8 @@ class DnsMessageBuilderNew():
 
         if id is not None:
             self.__dns_message.header.id = id
+            
+        return self
 
 
     def __build_rrformat(self, name:str, type_value:str|QTYPE_VALUES, class_value:str|QCLASS_VALUES, ttl:int, rdata):
@@ -49,7 +56,7 @@ class DnsMessageBuilderNew():
         return self
 
 
-    def autorithy(self, name, type_value, class_value, ttl, rdata=None):
+    def autorithy(self, name, type_value, class_value, ttl, rdata):
         self.__dns_message.header.nscount = self.__dns_message.header.nscount.value+1
         self.__dns_message.autorithy.rrformat_list.append(self.__build_rrformat(name, type_value, class_value, ttl, rdata))
         return self

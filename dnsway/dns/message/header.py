@@ -133,6 +133,7 @@ class HeaderMessage(DnsWaySerializer):
     def id(self,id:int):
         self.id.value = id
 
+
     @query_type.setter
     def query_type(self, query_type:QUERY_TYPE) -> None:
         self.__flags.value = self.__flags.value & 0x7FFF
@@ -165,6 +166,7 @@ class HeaderMessage(DnsWaySerializer):
         self.__flags.value = self.__flags.value & (0xFEFF)
         if rd_flag:
             self.__flags.value = self.__flags.value | (0x1 << self.RD_SHIFT_BITS)
+
 
     @ra.setter
     def ra(self, ra_flag:bool):
@@ -204,13 +206,14 @@ class HeaderMessage(DnsWaySerializer):
 
     
     def decode(self, data:bytearray, offset:int) -> int:
-        k =  super().decode(data, offset, self.id, self.flags, self.qdcount, self.ancount, self.nscount, self.arcount)
-        '''print("answercount:",self.ancount,"-----------")
-        print("QDCOUNT:",self.qdcount,"-----------")
-        print("nscount:",self.nscount,"-----------")
-        print("arcount:",self.arcount,"-----------")
-        print("HEADER DECODED")'''
-        return k
+        return super().decode(data, offset, self.id, self.flags, self.qdcount, self.ancount, self.nscount, self.arcount)
+        # k =  super().decode(data, offset, self.id, self.flags, self.qdcount, self.ancount, self.nscount, self.arcount)
+        # '''print("answercount:",self.ancount,"-----------")
+        # print("QDCOUNT:",self.qdcount,"-----------")
+        # print("nscount:",self.nscount,"-----------")
+        # print("arcount:",self.arcount,"-----------")
+        # print("HEADER DECODED")'''
+        # return k
 
 
     # def __str__(self):

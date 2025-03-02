@@ -1,8 +1,8 @@
+import time
 from dnsway.dns.message.definition.domain_name import DomainName
 from dnsway.dns.message.dns_serialize import DnsWaySerializer
-from enum import Enum
-
 from dnsway.dns.message.type import int16
+from enum import Enum
 
 
 class QTYPE_VALUES(Enum):
@@ -57,7 +57,6 @@ class RRecordData(DnsWaySerializer):
 
     @property
     def resource_record(self):
-        print("getting rrrecord")
         return self.__resource_record
     
     
@@ -70,20 +69,14 @@ class RRecordData(DnsWaySerializer):
         if self.resource_record is None:
             return bytearray()
         else:
-            rr_encoded = self.resource_record.encode()
-            print("cname len",len(rr_encoded))
+            return self.resource_record.encode()
+            #rr_encoded = self.resource_record.encode()
+            # print("cname len",len(rr_encoded))
             # self.rdata_length = len(rr_encoded)
-            return rr_encoded
+            #return rr_encoded
 
     
     def decode(self, data:bytearray, offset:int) -> int:
-        #original_data = bytearray(data)
-        #data = data[offset:]
-        # print("owndata:",data)
-        # print("IN RRECORD DATA DECODE PHASE")
-        # print("rdata length",self.rdata_length)
-        # print("RRRECORDDATA: ",data)
-        # print("------------")
         if len(data) == 0: return 0
 
         try:
@@ -130,12 +123,31 @@ class ARecord(DnsWaySerializer):
     @ip_address.setter
     def ip_address(self, ip_address:str):
         ip_decimal_list = ip_address.split('.')
-        for ip_decimal,i in enumerate(ip_decimal_list):
+        print(ip_decimal_list)
+        for i,ip_decimal in enumerate(ip_decimal_list):
             self.ip_address[i] = int(ip_decimal)
+            print(i,int(ip_decimal))
+
+        self.__ip_address_str = ip_address
+        
+       # time.sleep(100)
+
+    
 
 
     def encode(self, /) -> bytearray:
+
         return self.ip_address
+    
+
+    # def __bytes_to_str(self, data:bytes):
+    #     ip_str = ''
+    #     for k in range(0,4):
+    #         octet = data.pop(0)
+    #         ip_str = ip_str + f"{octet}."
+    #         self.ip_address[k] = octet
+    #     ip_str = ip_str[:-1]
+    #     self.__ip_address_str = ip_str
     
 
     def decode(self, data:bytearray,offset:int):
@@ -147,12 +159,12 @@ class ARecord(DnsWaySerializer):
             self.ip_address[k] = octet
         ip_str = ip_str[:-1]
         self.__ip_address_str = ip_str
-        print(ip_str)
+        # print(ip_str)
         return 4
 
 
     def __str__(self) -> str:
-        return self.__ip_address_str.__str__()
+        return self.__ip_address_str
     
 
 class AAAARecord(DnsWaySerializer):
@@ -196,13 +208,13 @@ class AAAARecord(DnsWaySerializer):
         return self.__ipv6_address_str.__str__()
     
 
-
 #################################
 #        STANDARD RDATA         #
 #################################
 
 
 class CNameRecord(DnsWaySerializer):
+
     def __init__(self):
         self.__alias_name = DomainName()
     
@@ -223,9 +235,10 @@ class CNameRecord(DnsWaySerializer):
 
     def decode(self, data, offset):
         # print("in decode cname")
-        k =  self.alias_name.decode(data, offset)
-        # print(self.alias_name.domain_name)
-        return k 
+        return self.alias_name.decode(data, offset)
+        # k =  self.alias_name.decode(data, offset)
+        # # print(self.alias_name.domain_name)
+        # return k 
     
     def __str__(self):
         return self.alias_name.domain_name
@@ -240,6 +253,7 @@ class MXRecord():
 
 
 class NSRecord(DnsWaySerializer):
+
     def __init__(self):
         self.__alias_name = DomainName()
     
@@ -259,9 +273,9 @@ class NSRecord(DnsWaySerializer):
     
 
     def decode(self, data, offset):
-
-        k =  self.alias_name.decode(data, offset)
-        return k 
+        return self.alias_name.decode(data, offset)
+        # k =  self.alias_name.decode(data, offset)
+        # return k 
     
     def __str__(self):
         return self.alias_name.domain_name

@@ -1,4 +1,3 @@
-# from __future__ import annotations
 from __future__ import annotations
 from dnsway.dns.message.definition.resource_record import QCLASS_VALUES, QTYPE_VALUES
 from dnsway.dns.message.dns_serialize import DnsWaySerializer

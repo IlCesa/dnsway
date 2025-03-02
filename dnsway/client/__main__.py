@@ -23,7 +23,7 @@ if __name__ == "__main__":
     #            .set_question(domain_name=args.domain_name, qtype=args.qtype, qclass=args.qclass)
     #            .enable_rd()
     #            .build())
-    dns_message = (DnsMessageBuilderNew(qr=QUERY_TYPE.QUERY,opcode=OPCODE_TYPE.QUERY,rd=True)
+    dns_message = (DnsMessageBuilderNew().header(qr=QUERY_TYPE.QUERY,opcode=OPCODE_TYPE.QUERY,rd=True)
                    .question(qname=args.domain_name, qtype=args.qtype, qclass=args.qclass)
                    .build())
     
@@ -38,7 +38,7 @@ if __name__ == "__main__":
     dnsway_trasport.send(dns_message=dns_message)
     recv_dns_message:DnsMessage = dnsway_trasport.recv()
     recv_dns_message.hex_dump()
-    dns_message_view:DnsMessageView = DnsMessageConverter().raw_msg_to_view(recv_dns_message)
+    dns_message_view:DnsMessageView = DnsMessageConverter().to_view(recv_dns_message)
     
     print(dns_message_view)
 

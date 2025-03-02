@@ -16,3 +16,8 @@ class DnsWayDecoderNotSupported(Exception):
 class DnsWayMultipleQuestionNotSupported(Exception):
     def __init__(self, *args):
         super().__init__(*args)
+
+
+class DnsWayQTypeNotSupported(Exception):
+    def __init__(self, *args):
+        super().__init__(*args)

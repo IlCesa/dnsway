@@ -2,7 +2,7 @@ import asyncio
 
 from dnsway.server.adapter.cache_repository import InMemoryRepository
 from dnsway.server.adapter.rootserver_repository import FileRootRepository
-from dnsway.server.service.resolver_service import DnsServerResolverServiceImpl
+from dnsway.server.service.resolver_service2 import DnsServerResolverServiceImpl
 
 
 class DnsWayResolverServer:

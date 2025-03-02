@@ -49,7 +49,8 @@ class QuestionMessage(DnsWaySerializer):
     
 
     def decode(self, data:bytearray, offset:int) -> int:
-        k =  super().decode(data, offset, self.qname, self.qtype,self.qclass)
-        #print(self.qclass, "-----------")
-        #print("QUESTION DECODED")
-        return k
+        return super().decode(data, offset, self.qname, self.qtype,self.qclass)
+        # k =  super().decode(data, offset, self.qname, self.qtype,self.qclass)
+        # #print(self.qclass, "-----------")
+        # #print("QUESTION DECODED")
+        # return k

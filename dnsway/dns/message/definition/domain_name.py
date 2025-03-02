@@ -1,5 +1,5 @@
 from dnsway.dns.message.dns_serialize import DnsWaySerializer
-from copy import deepcopy
+
 
 class DomainName(DnsWaySerializer):
     

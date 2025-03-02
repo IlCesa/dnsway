@@ -34,38 +34,41 @@ class DnsServerResolverServiceImpl(AbstractServiceLayer):
         sname = user_request_message.question.qname.domain_name
         try:
             # check cache here
-            res = self.__search_authoritative(sname)
-            dns_message_view:DnsMessageView = DnsMessageConverter().raw_msg_to_view(res)
-            print(dns_message_view)
+            res = self.__search_records(sname)
+            res.hex_dump()
+
+            # dns_message_view:DnsMessageView = DnsMessageConverter().to_view(res)
+            # print(dns_message_view)
+            # dns_message = DnsMessageConverter().to_msg(dns_message_view=dns_message_view)
+            # dns_message.hex_dump()
+            
             res.header.id = user_request_message.header.id.value
             res.header.ra = True
             res.header.rd = True
-            res.hex_dump()
-            # res.answer.rrformat_list[0].rdata_length = 29
-            print("valore cname",res.answer.rrformat_list[0].rdata_length)
-            #print("lunghezza in byte",len(res.encode()))
+            # res.hex_dump()
+
             return res
         except Exception as e:
             print(e)
             return DnsServerResolverServiceImpl.DnsMessageNotImplemented(user_request_message.header.id.value,user_request_message.question.qname.domain_name)
 
-    def __search_authoritative(self, domain_name):
+    def __search_records(self, domain_name):
         recv_iteration_message = DnsMessage()
         stype = QTYPE_VALUES.A
         sname = domain_name
-        response = (DnsMessageBuilderNew(qr=QUERY_TYPE.RESPONSE,opcode=OPCODE_TYPE.QUERY).question(qname=domain_name, qtype="A", qclass="IN"))
+        response = (DnsMessageBuilderNew().header(qr=QUERY_TYPE.RESPONSE,opcode=OPCODE_TYPE.QUERY).question(qname=domain_name, qtype=stype, qclass="IN"))
         
         address = self.rootserver_repository.get().ipv4
         found = False
         while not found:
-            msg = (DnsMessageBuilderNew(qr=QUERY_TYPE.QUERY,opcode=OPCODE_TYPE.QUERY).question(qname=domain_name, qtype="A", qclass="IN").build())
+            msg = (DnsMessageBuilderNew().header(qr=QUERY_TYPE.QUERY,opcode=OPCODE_TYPE.QUERY).question(qname=domain_name, qtype="A", qclass="IN").build())
             dnsway_trasport = DnsWayTransportFactory().create_transport(transport_mode=TRANSPORT_MODE.DATAGRAM,address=address,port=53)
             print("sending to address",address)
             dnsway_trasport.send(msg)
     
             # CONVERTING TO MSG_VIEW
             recv_iteration_message:DnsMessage = dnsway_trasport.recv()
-            recv_iteration_message_view:DnsMessageView = DnsMessageConverter().raw_msg_to_view(recv_iteration_message)
+            recv_iteration_message_view:DnsMessageView = DnsMessageConverter().to_view(recv_iteration_message)
             
             recv_answer : RRecordView = recv_iteration_message_view.answer_list
             recv_additional = recv_iteration_message_view.additional_list
@@ -86,7 +89,7 @@ class DnsServerResolverServiceImpl(AbstractServiceLayer):
                     found_ip =  recv_answer[0].data 
                 else:
                     if recv_answer[0].type_value == QTYPE_VALUES.CNAME:
-                        print("è un cname cazzo faccio")
+                        # print("è un cname cazzo faccio")
                         #print(recv_iteration_message.answer.rrformat_list[0].hex_dump())
                         #recv_iteration_message.answer.rrformat_list[0]
 
@@ -100,17 +103,20 @@ class DnsServerResolverServiceImpl(AbstractServiceLayer):
                         response.answer(domain_name, type_value, class_value, ttl, rdata)
                         # time.sleep(10)
                         # HO CAPITO COSA STA SUCCEDENDO.
-                        # IO STO COPIANDO
                         
                         #response.answer(recv_iteration_message.answer.rrformat_list[0])
                         domain_name = recv_answer[0].data
                         print(domain_name)
                         # time.sleep(3)
                         address = self.rootserver_repository.get().ipv4
-                    
+            # NUOVA LOGICA DI CONTROLLO
+            # da qui in poi sarebbe piu' corretto avere questa struttura
+            # check lista autority > 0 => controllo glue records in additional list => contatto gli address forniti come glue records
+            # se non ci sono dati come autority beh, BadResponse o NameServerError
+
             elif len(recv_additional) == 0:
-                k = self.__search_authoritative(recv_autorithy[0].data)
-                address = DnsMessageConverter().raw_msg_to_view(k).answer_list[0].data
+                k = self.__search_records(recv_autorithy[0].data)
+                address = DnsMessageConverter().to_view(k).answer_list[0].data
                 print("address autoritativo: ",address)
             else:
                 for k in recv_additional:
@@ -118,22 +124,102 @@ class DnsServerResolverServiceImpl(AbstractServiceLayer):
                         address = k.data
                         break
         print(found_ip)
-        print("qui")
         return response.build()
 
 
     @staticmethod
     def DnsMessageNotImplemented(id:int, domain_name:str) -> DnsMessage:
-        return (DnsMessageBuilderNew(rd=True,id=id, rcode=RCODE_TYPE.NOT_IMPLEMENTED,opcode=OPCODE_TYPE.QUERY)
+        return (DnsMessageBuilderNew().header(rd=True,id=id, rcode=RCODE_TYPE.NOT_IMPLEMENTED,opcode=OPCODE_TYPE.QUERY)
                 .question(qname=domain_name, qtype=QTYPE_VALUES.A, qclass=QCLASS_VALUES.IN)
                 .build())
 
 
     @staticmethod
     def DnsMessageNameError(id:int) -> DnsMessage:
-        return DnsMessageBuilderNew(rd=True,id=id, rcode=RCODE_TYPE.NAME_ERROR).build()
+        return DnsMessageBuilderNew().header(rd=True,id=id, rcode=RCODE_TYPE.NAME_ERROR).build()
     
 
     @staticmethod
     def DnsMessageFormatError(id:int) -> DnsMessage:
-        return DnsMessageBuilderNew(rd=True,id=id, rcode=RCODE_TYPE.FORMAT_ERROR).build()
+        return DnsMessageBuilderNew().header(rd=True,id=id, rcode=RCODE_TYPE.FORMAT_ERROR).build()
+
+
+# class DnsServerResolverServiceImpl2(AbstractServiceLayer):
+    
+#     def __init__(self, rootserver_repository:AbstractRootRepository, cache_repository:AbstractCacheRepository):
+#         self.rootserver_repository = rootserver_repository
+#         self.cache_repository = cache_repository
+
+#         self.processed_domains_list = []
+
+
+#     def process(self, data) -> DnsMessage:
+#         user_request_message = DnsMessage.Decode(data)
+#         print(user_request_message)
+#         sname = user_request_message.question.qname.domain_name
+#         try:
+#             # check cache here
+#             res = self.__search_records(sname)
+
+#             return res
+#         except Exception as e:
+#             print(e)
+#             return DnsServerResolverServiceImpl.DnsMessageNotImplemented(user_request_message.header.id.value,user_request_message.question.qname.domain_name)
+
+#     def __search_records(self, domain_name):
+#         recv_iteration_message = DnsMessage()
+#         stype = QTYPE_VALUES.A
+#         sname = domain_name
+#         response = (DnsMessageBuilderNew(qr=QUERY_TYPE.RESPONSE,opcode=OPCODE_TYPE.QUERY).question(qname=domain_name, qtype=stype, qclass="IN"))
+        
+#         address = self.rootserver_repository.get().ipv4
+#         found = False
+#         while not found:
+#             msg = (DnsMessageBuilderNew(qr=QUERY_TYPE.QUERY,opcode=OPCODE_TYPE.QUERY).question(qname=domain_name, qtype="A", qclass="IN").build())
+#             dnsway_trasport = DnsWayTransportFactory().create_transport(transport_mode=TRANSPORT_MODE.DATAGRAM,address=address,port=53)
+#             print("sending to address",address)
+#             dnsway_trasport.send(msg)
+    
+#             # CONVERTING TO MSG_VIEW
+#             recv_iteration_message:DnsMessage = dnsway_trasport.recv()
+#             recv_iteration_message_view:DnsMessageView = DnsMessageConverter().to_view(recv_iteration_message)
+
+#             if len(recv_answer) > 0:
+#                 if stype == recv_answer[0].type_value:
+#                     print("Aggiungo alla risposta: ", recv_answer[0].data)
+#                     found = True
+#                     # response.answer(domain_name, type_value, class_value, ttl, rdata)
+#                     #copio la risposta nel nostro pacchetto
+#                 else:
+#                     if recv_answer[0].type_value == QTYPE_VALUES.CNAME:
+#                         print("è un cname cazzo faccio")
+#                         # response.answer(domain_name, type_value, class_value, ttl, rdata)
+#                         address = self.rootserver_repository.get().ipv4
+#             elif len(recv_additional) == 0:
+#                 k = self.__search_records(recv_autorithy[0].data)
+#                 address = DnsMessageConverter().to_view(k).answer_list[0].data
+#                 print("address autoritativo: ",address)
+#             else:
+#                 for k in recv_additional:
+#                     if k.type_value == QTYPE_VALUES.A:
+#                         address = k.data
+#                         break
+#         print(found_ip)
+#         return response.build()
+
+
+#     @staticmethod
+#     def DnsMessageNotImplemented(id:int, domain_name:str) -> DnsMessage:
+#         return (DnsMessageBuilderNew(rd=True,id=id, rcode=RCODE_TYPE.NOT_IMPLEMENTED,opcode=OPCODE_TYPE.QUERY)
+#                 .question(qname=domain_name, qtype=QTYPE_VALUES.A, qclass=QCLASS_VALUES.IN)
+#                 .build())
+
+
+#     @staticmethod
+#     def DnsMessageNameError(id:int) -> DnsMessage:
+#         return DnsMessageBuilderNew(rd=True,id=id, rcode=RCODE_TYPE.NAME_ERROR).build()
+    
+
+#     @staticmethod
+#     def DnsMessageFormatError(id:int) -> DnsMessage:
+#         return DnsMessageBuilderNew(rd=True,id=id, rcode=RCODE_TYPE.FORMAT_ERROR).build()
