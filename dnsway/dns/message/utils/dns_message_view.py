@@ -34,12 +34,12 @@ class HeaderView():
 class QuestionView():
      def __init__(self, domain_name:str, type_value:QTYPE_VALUES, class_value:QCLASS_VALUES):
           self.name = domain_name
-          self.type_Value = type_value
+          self.type_value = type_value
           self.class_value = class_value
 
      def __str__(self):
           str="%% QUESTION\n"
-          str+=f"% {self.name} {self.type_Value.name} {self.class_value.name}\n\n"
+          str+=f"% {self.name} {self.type_value.name} {self.class_value.name}\n\n"
           return str
 
 

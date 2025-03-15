@@ -1,5 +1,7 @@
 import asyncio
 
+from dnsway.dns.message.dns_message import DnsMessage
+from dnsway.dns.message.utils.converter import DnsMessageConverter
 from dnsway.server.adapter.cache_repository import InMemoryRepository
 from dnsway.server.adapter.rootserver_repository import FileRootRepository
 from dnsway.server.service.resolver_service2 import DnsServerResolverServiceImpl
@@ -29,13 +31,15 @@ class DnsWayUdpResolver:
 
 
     def datagram_received(self, data, addr):
-        address, port = addr
-        print(address,port)
-        print(f"Ricevuto pacchetto da {addr}: {data.hex()}")
-        #res = self.service_layer.process(data,)
-        res = DnsServerResolverServiceImpl(rootserver_repository=FileRootRepository('dnsway/server/data/root.txt'),
-                                           cache_repository=InMemoryRepository()).process(data,)
-        self.transport.sendto(res.encode(), addr)
+        # address, port = addr
+
+        dns_message = DnsMessage.Decode(data)
+        dns_message_view = DnsMessageConverter().to_view(dns_message)
+
+        res_msg_view = DnsServerResolverServiceImpl(rootserver_repository=FileRootRepository('dnsway/server/data/root.txt'), cache_repository=InMemoryRepository()).process(dns_message_view)
+        res_dns_msg = DnsMessageConverter().to_msg(res_msg_view)
+
+        self.transport.sendto(res_dns_msg.encode(), addr)
 
 
     @staticmethod

@@ -123,10 +123,10 @@ class ARecord(DnsWaySerializer):
     @ip_address.setter
     def ip_address(self, ip_address:str):
         ip_decimal_list = ip_address.split('.')
-        print(ip_decimal_list)
+        # print(ip_decimal_list)
         for i,ip_decimal in enumerate(ip_decimal_list):
             self.ip_address[i] = int(ip_decimal)
-            print(i,int(ip_decimal))
+            # print(i,int(ip_decimal))
 
         self.__ip_address_str = ip_address
         
@@ -200,7 +200,7 @@ class AAAARecord(DnsWaySerializer):
         
         ip_str = ip_str[:-1]
         self.__ipv6_address_str = ip_str
-        print(ip_str)
+        # print(ip_str)
         return 16
 
 

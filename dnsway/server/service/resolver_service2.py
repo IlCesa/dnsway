@@ -25,9 +25,8 @@ class DnsServerResolverServiceImpl(AbstractServiceLayer):
     def __init__(self, rootserver_repository:AbstractRootRepository, cache_repository:AbstractCacheRepository):
         self.rootserver_repository = rootserver_repository
         self.cache_repository = cache_repository
-
         self.processed_domains_list = []
-
+        
 
     def process(self, data) -> DnsMessage:
         # qui devo ricevere direttamente un DnsMessageView.
@@ -94,18 +93,19 @@ class DnsServerResolverServiceImpl(AbstractServiceLayer):
                     rrecord = answer.data
                     if stype == answer.type_value:
                         found = True
-                        print("found rrecord:",rrecord, type(rrecord))
                         rdata = copy.deepcopy(ResourceRecordConverter().to_msg(rrecord))
-                        #print("rdata",rdata,rdata.ip_address, type(rdata))
                         response.answer(answer.name, answer.type_value, answer.class_value, answer.ttl, rdata)
                     elif answer.type_value == QTYPE_VALUES.CNAME:
+                        # dovrei controllare se c'è per questo cname un NS direttamente disponibile
+                        # nelle autorithy list e, di conseguenza, se c'è il glue record nell'additional
+                        # ESEMPIO -> in answer troviamo C.ISI.EDU. -> in AUTORITHY troviamo l'NS SERVER ISI.EDU. E IN ADDITIONAL TROVIAMO IL RECORD A PER ISI.EDU.
                         domain_name = rrecord.alias
                         rdata = ResourceRecordConverter().to_msg(rrecord)
                         response.answer(answer.name, answer.type_value, answer.class_value, answer.ttl, rdata)
                         address = self.rootserver_repository.get().ipv4
-
             elif len(autorithies) > 0:
                 additionals_dict = {}
+                # devo prendere sia A records che AAAA
                 for k in additionals:
                     if k.type_value == QTYPE_VALUES.A:
                         additionals_dict[k.name] = k
@@ -118,9 +118,9 @@ class DnsServerResolverServiceImpl(AbstractServiceLayer):
                             address = arecord.data.address
                             #addresses.append(arecord.data.address)
                     else:
+
                         k = self.__search_records(autorithy.data.nsdname)
                         msg = DnsMessageConverter().to_view(k)
-                        print(msg)
                         address = msg.answer_list[0].data.address
                         break
             else:

@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-import time
 from typing import Literal
 from dnsway.dns.message.definition.resource_record import QCLASS_VALUES, QTYPE_VALUES, AAAARecord, ARecord, CNameRecord, NSRecord
 from dnsway.dns.message.dns_builder import DnsMessageBuilderNew
@@ -9,7 +8,6 @@ from dnsway.dns.message.question import QuestionMessage
 from dnsway.dns.message.resource import ResourceRecordFormat
 from dnsway.dns.message.utils.dns_message_view import AAAARecordView, ARecordView, CNameRecordView, DnsMessageView, HeaderView, NSRecordView, QuestionView, RRecordView
 from dnsway.dns.message.utils.rrecord_factory import ResourceRecordFactory
-from dnsway.server.domain.resolver_model import RRecord
 
 
 class DnsWayConverter(ABC):
@@ -86,7 +84,7 @@ class QuestionConverter(DnsWayConverter):
         
     
     def to_msg(self, question_view:QuestionView, dnsway_message_builder:DnsMessageBuilderNew): 
-        dnsway_message_builder.question(qname=question_view.name,qtype=question_view.type_Value,qclass=question_view.class_value)
+        dnsway_message_builder.question(qname=question_view.name,qtype=question_view.type_value,qclass=question_view.class_value)
 
 
 class ResourceRecordFormatConverter(DnsWayConverter):
@@ -146,7 +144,7 @@ class ResourceRecordConverter(DnsWayConverter):
         elif isinstance(rrecord_view,NSRecordView):
             return NsRecordConverter().to_msg(rrecord_view)
         else:
-            print("CONVERSION NOT SUPPORTED")
+            print("CONVERSION NOT SUPPORTED FOR TYPE",type(rrecord_view))
             pass # NOT SUPPORTED TYPE CONVERSION
 
 
@@ -167,10 +165,6 @@ class ResourceRecordConverter(DnsWayConverter):
 class ARecordConverter():
     def to_view(self, arecord:ARecord):
         rr = ARecordView(str(arecord))
-        print("IN TO VIEW CONVERTER")
-        print(str(arecord))
-        print(rr)
-        # time.sleep(500)
         return rr
 
     def to_msg(self, arecord_view:ARecordView):
