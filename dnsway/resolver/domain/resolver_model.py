@@ -1,6 +1,13 @@
+from dataclasses import dataclass
 import math
+import time
 from dnsway.dns.message.utils.dns_message_view import RRecordView
 import threading
+
+@dataclass(frozen=True)
+class RRecordCacheView:
+   rrecord_view:RRecordView
+   absolute_ttl_time:int
 
 class NameServer:
    def __init__(self, ns:str, address:str, ttl:int = None):
@@ -58,7 +65,7 @@ class NameServer:
 #             return addr
 #       return -1
 
-
+#TODO: Should depends on abstraction that define the desired "behavior" ex. cache_record, next_addres etc.
 class QueryResolutionHistory:
    def __init__(self, sname, stype, sclass, sbelt):
       self.sname = sname
@@ -70,27 +77,36 @@ class QueryResolutionHistory:
       self.match_count = -1 # an euristic about the 'distance' between slist delegations and sname, must be initialized with -1
       self.__reset_slist()
 
-   def next_address(self) -> NameServer:
-      s = sorted(self.slist,  key=lambda x: x.get_score())
-      # qui dovrei capire se ci sono score molto bassi, se si li rimuovo dalla lista.
-      # se la lista resta senza elemento reinizializzo slist con la sbelt.
-      for k in s:
-         print(k)
-      s = list(filter(lambda k:':' not in k.address, s))
-      #print(s[0].get_score(), s[0].nsdname, s[0].address)
-      return s[:4]
+   def get_ns_by_address(self, address):
+      for ns in self.slist:
+         if ns.address == address:
+            return ns
+      return -1
+
+   def next_address(self, desired_addresses:int=1, score_cutoff:int = 0.2):
+      # and ':' not in x.address
+      self.slist = list(filter(lambda x:x.get_score() > score_cutoff and ':' not in x.address, self.slist))
+      if self.slist:
+         s = sorted(self.slist,  key=lambda x: x.get_score())
+         return s[:desired_addresses]
+      else:
+         self.slist = self.sbelt # all delegations are expired or the score is too low to keep the record
+         return self.slist[:desired_addresses]
 
    def set_slist(self, delegations_list:list[NameServer]):
       # nel mio caso che sto seguendo fedelmente l'rfc potrei, invece di resettare la lista, mantenere tutti i nameserver con distanza matchcount minima.
       self.slist = delegations_list
       self.__update_mc()
 
-   def add_rrecord(self, rrecord:RRecordView):
-      self.cache.append(rrecord)
+   def cache_rrecord(self, rrecord:RRecordView):
+      absolute_ttl_time = int(time.time()) + int(rrecord.ttl)
+      self.cache.append(RRecordCacheView(rrecord,absolute_ttl_time))
 
    def local_lookup(self) -> RRecordView:
+      self.cache = list(filter(lambda x: x.absolute_ttl_time - int(time.time()) >= 0, self.cache))
       if self.cache:
-         return self.cache
+         cached_rrecord = [rrecord_cache.rrecord_view for rrecord_cache in self.cache]
+         return cached_rrecord
       return -1
 
    def __update_mc(self):
@@ -100,6 +116,13 @@ class QueryResolutionHistory:
       s1.reverse()
       s2.reverse()
       self.match_count = sum(1 for x, y in zip(s1, s2) if x == y)
+
+   def calculate_match_count(self, nsdname1:str, nsdname2:str):
+      s1 = nsdname1.split('.')
+      s2 = nsdname1.split('.')
+      s1.reverse()
+      s2.reverse()
+      return sum(1 for x, y in zip(s1, s2) if x == y)
 
    def __reset_slist(self):
       self.slist = self.sbelt

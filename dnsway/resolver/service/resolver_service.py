@@ -1,4 +1,6 @@
 import asyncio
+import socket
+import time
 from dnsway.dns.message.definition.resource_record import QCLASS_VALUES, QTYPE_VALUES
 from dnsway.dns.message.dns_builder import DnsMessageBuilderNew
 from dnsway.dns.message.dns_message import DnsMessage
@@ -18,15 +20,29 @@ class AbstractServiceLayer:
         raise NotImplementedError
 
 class UDPClientProtocol(asyncio.DatagramProtocol):
-    def __init__(self, future, address):
+    def __init__(self, future, address, callback):
         self.future = future
         self.address = address
+        # self.query_history_uow = query_history_of_work
+        self.callback = callback
+
+        self._start_time = 0
 
     def connection_made(self, transport):
+        # print("HERE")
+        # input()
         self.transport = transport
+        self._start_time = time.time()
+
+    # def connection_lost(self, exc):
+    #     return super().connection_lost(exc)
 
     def datagram_received(self, data, addr):
         # print(f"received from {addr} {data}", flush=True)
+        elapsed_time = time.time() - self._start_time
+        #TODO: update status and request 
+        self.callback(addr,elapsed_time,False)
+
         res_msg = DnsMessage.Decode(data)
         if not self.future.done():
             self.future.set_result(res_msg)
@@ -35,31 +51,32 @@ class UDPClientProtocol(asyncio.DatagramProtocol):
 class NetworkResolverService():
     def __init__(self):
         pass
+        #self.query_history_uow = query_history_of_work
         #self.event_loop = event_loop
 
-    async def send_msg(self, raw_req_msg:DnsMessage, future, address, port=53):
+    async def send_msg(self, raw_req_msg:DnsMessage, future, address, callback, port=53):
         transport, protocol = await asyncio.get_running_loop().create_datagram_endpoint(
-            lambda: UDPClientProtocol(future, address),
-            remote_addr=(address, port)
+            lambda: UDPClientProtocol(future, address, callback),
+            remote_addr=(address, port),
+            family=socket.AF_INET6 if ':' in address else socket.AF_INET
         )
         # converto il messaggio in byte
         print("sending to",address)
 
-        transport.sendto(raw_req_msg.encode())  
+        try:
+            transport.sendto(raw_req_msg.encode())
+        except asyncio.TimeoutError:
+            callback(address, 100, True)
         # try:
         #     await future  # Attendi che venga impostato il risultato
         # finally:
         #     transport.close()
 
-    async def resolve(self, addresses, raw_req_msg):
+    async def resolve(self, addresses, raw_req_msg, callback:callable):
         future = asyncio.get_running_loop().create_future()
-        print("sono qui")
-        tasks = [self.send_msg(raw_req_msg, future, addr) for addr in addresses]
+        tasks = [self.send_msg(raw_req_msg, future, addr, callback) for addr in addresses]
         done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
         print("completato")
-        # for task in pending:
-        #     task.cancel()
-        # await asyncio.gather(*pending)
         res_msg = await future
         print(res_msg)
         return DnsMessageConverter().to_view(res_msg)
@@ -70,26 +87,45 @@ class DnsServerResolverServiceImpl(AbstractServiceLayer):
         self.network_resolver_service = NetworkResolverService()
         self.processed_domains_list = []
 
+        self.query_key = None #will be initialized once process method is called
+
+    def __update_ns_stats_callback(self, address:str, elapsed_time:float, timed_out:bool) -> None:
+        print("CALLED BACK FROM COROUTINE", address[0], elapsed_time, timed_out)
+        address, port = address
+        with self.query_history_uow as qru:
+            qrh:QueryResolutionHistory = qru.history.get(*self.query_key)
+            ns: NameServer = qrh.get_ns_by_address(address)
+            print("FROM CALLBACK FOUND NS:",ns)
+            if ns != -1:
+                ns.increment_req()
+                if not timed_out:
+                    ns.increment_res()
+                    ns.add_t(elapsed_time)
+                    print("NS STATS FOR",address, "UPDATED SUCCESFULLY")
+
+            # the query info (sname, stype, sclass) should be available in this class istance
+            # update server stats (req++, res++ (eventually), elapsed_time for weighted_response)
+            pass
+
     async def process(self, dns_message_view:DnsMessageView) -> DnsMessage:
         try:
-            # print("\n\n\n\n\n\n\n\n\n\n\n\n\n")
-            # print("RECV REQ:")
             # print(dns_message_view)
             question = dns_message_view.question
-            stuple = (question.name, question.type_value, question.class_value, dns_message_view.header.id)
-            answers = await self.__search_records(*stuple)
+            stuple = (question.name, question.type_value, question.class_value)
+            self.query_key = stuple
+            answers = await self.__global_lookup(*stuple)
             answers = answers[1]
+            #TODO: encapsulate result rrecord inside a RAW DnsMessage
             for answer in answers:
                 print(answer.name, answer.type_value, answer.class_value, answer.ttl, answer.data)
 
-            #print("risposta:",answers)
             return DnsServerResolverServiceImpl.DnsMessageNotImplemented(dns_message_view.header.id, dns_message_view.question.name)
 
         except Exception as e:
             print(e)
             return DnsServerResolverServiceImpl.DnsMessageNotImplemented(dns_message_view.header.id, dns_message_view.question.name)
 
-    async def __search_records(self, sname:str, stype:QTYPE_VALUES, sclass:QCLASS_VALUES, id:int=None) -> list[RRecordView]:
+    async def __global_lookup(self, sname:str, stype:QTYPE_VALUES, sclass:QCLASS_VALUES) -> list[RRecordView]:
         initial_sname = sname
         rr_found = False
         rr_list = []
@@ -101,21 +137,21 @@ class DnsServerResolverServiceImpl(AbstractServiceLayer):
                 res = qrh.local_lookup()
 
             if res != -1:
-
                 cache_response = True
                 answers = res
             else:  
                 with self.query_history_uow as qru:
                     qrh:QueryResolutionHistory = qru.history.get(sname,stype,sclass)
-                    na:NameServer = qrh.next_address()
+                    na:NameServer = qrh.next_address(desired_addresses=4)
                     addresses = [ns.address for ns in na]
                     print(f"Next address:{addresses}")
+                    # input()
 
                 msg = (DnsMessageBuilderNew().header(qr=QUERY_TYPE.QUERY,opcode=OPCODE_TYPE.QUERY).question(qname=sname, qtype=stype, qclass=sclass).build())
-                recv_iteration_message_view = await self.network_resolver_service.resolve(addresses, msg)
+                recv_iteration_message_view = await self.network_resolver_service.resolve(addresses, msg, self.__update_ns_stats_callback)
 
-                #print("RECV MSG")
-                #print(recv_iteration_message_view)
+                print("RECV MSG")
+                print(recv_iteration_message_view)
                 answers = recv_iteration_message_view.answer_list
                 autorithies = recv_iteration_message_view.autorithy_list
                 additionals = recv_iteration_message_view.additional_list
@@ -128,7 +164,8 @@ class DnsServerResolverServiceImpl(AbstractServiceLayer):
                         if not cache_response:
                             with self.query_history_uow as qru:
                                 qrh:QueryResolutionHistory = qru.history.get(sname, stype, sclass)
-                                qrh.cache.append(answer)
+                                qrh.cache_rrecord(answer)
+                                # qrh.cache.append(answer)
 
                     elif answer.type_value == QTYPE_VALUES.CNAME:
                         #TODO: CHECK IN THE ADDITIONAL SECTION IF THERE IS A GLUE RECORD FOR THIS CNAME
@@ -136,7 +173,8 @@ class DnsServerResolverServiceImpl(AbstractServiceLayer):
                         if not cache_response:
                             with self.query_history_uow as qru:
                                 qrh:QueryResolutionHistory = qru.history.get(sname, stype, sclass)
-                                qrh.cache.append(answer)
+                                qrh.cache_rrecord(answer)
+                                # qrh.cache.append(answer)
 
                         sname = answer.data.alias
                         rr_list.append(answer)
@@ -152,7 +190,7 @@ class DnsServerResolverServiceImpl(AbstractServiceLayer):
             elif autorithies:
                 task_list = []
                 for autorithy in autorithies:
-                    task_list.append(self.__search_records(autorithy.data.nsdname, QTYPE_VALUES.A, QCLASS_VALUES.IN))
+                    task_list.append(self.__global_lookup(autorithy.data.nsdname, QTYPE_VALUES.A, QCLASS_VALUES.IN))
                 
                 done, pending = await asyncio.wait(task_list, return_when=asyncio.FIRST_COMPLETED)
                 nsdname, ns_list = done.pop().result()
