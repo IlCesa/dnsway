@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
 from typing import Literal
-from dnsway.dns.message.definition.resource_record import QCLASS_VALUES, QTYPE_VALUES, AAAARecord, ARecord, CNameRecord, NSRecord
+from dnsway.dns.message.definition.resource_record import QCLASS_VALUES, QTYPE_VALUES, AAAARecord, ARecord, CNameRecord, NSRecord, SOARecord
 from dnsway.dns.message.dns_builder import DnsMessageBuilderNew
 from dnsway.dns.message.dns_message import DnsMessage
 from dnsway.dns.message.header import OPCODE_TYPE, QUERY_TYPE, RCODE_TYPE, HeaderMessage
 from dnsway.dns.message.question import QuestionMessage
 from dnsway.dns.message.resource import ResourceRecordFormat
-from dnsway.dns.message.utils.dns_message_view import AAAARecordView, ARecordView, CNameRecordView, DnsMessageView, HeaderView, NSRecordView, QuestionView, RRecordView
+from dnsway.dns.message.utils.dns_message_view import AAAARecordView, ARecordView, CNameRecordView, DnsMessageView, HeaderView, NSRecordView, QuestionView, RRecordView, SOARecordView
 from dnsway.dns.message.utils.rrecord_factory import ResourceRecordFactory
 
 
@@ -143,6 +143,8 @@ class ResourceRecordConverter(DnsWayConverter):
             return CNameRecordConverter().to_msg(rrecord_view)
         elif isinstance(rrecord_view,NSRecordView):
             return NsRecordConverter().to_msg(rrecord_view)
+        elif isinstance(rrecord_view,SOARecordView):
+            return SOARecordConverter().to_msg(rrecord_view)
         else:
             print("CONVERSION NOT SUPPORTED FOR TYPE",type(rrecord_view))
             pass # NOT SUPPORTED TYPE CONVERSION
@@ -157,7 +159,10 @@ class ResourceRecordConverter(DnsWayConverter):
             return CNameRecordConverter().to_view(rrecord)
         elif isinstance(rrecord,NSRecord):
             return NsRecordConverter().to_view(rrecord)
+        elif isinstance(rrecord, SOARecord):
+            return SOARecordConverter().to_view(rrecord)
         else:
+            print("CONVERSION NOT SUPPORTED FOR TYPE",type(rrecord))
             pass # NOT SUPPORTED TYPE CONVERSION
         pass
 
@@ -205,3 +210,19 @@ class CNameRecordConverter():
         cnamerecord.alias_name = cnamerecord_view.alias
         return cnamerecord
 
+
+class SOARecordConverter():
+    def to_view(self, soa_record:SOARecord):
+        return SOARecordView(soa_record.mname.domain_name, soa_record.rname.domain_name, soa_record.serial.value, soa_record.refresh.value, soa_record.retry.value, soa_record.expire.value, soa_record.minimum.value)
+
+
+    def to_msg(self, soarecord_view:SOARecordView):
+        soarecord = SOARecord()
+        soarecord.rname = soarecord_view.rname
+        soarecord.mname = soarecord_view.mname
+        soarecord.serial = soarecord_view.serial
+        soarecord.refresh = soarecord_view.refresh
+        soarecord.retry = soarecord_view.retry
+        soarecord.expire = soarecord_view.exprire
+        soarecord.minimum = soarecord_view.minimum
+        return soarecord

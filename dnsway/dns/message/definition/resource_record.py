@@ -1,7 +1,7 @@
 import time
 from dnsway.dns.message.definition.domain_name import DomainName
 from dnsway.dns.message.dns_serialize import DnsWaySerializer
-from dnsway.dns.message.type import int16
+from dnsway.dns.message.type import int16, int32
 from enum import Enum
 
 
@@ -95,6 +95,8 @@ class RRecordData(DnsWaySerializer):
             self.resource_record = CNameRecord()
         elif type_value == QTYPE_VALUES.NS:
             self.resource_record = NSRecord()
+        elif type_value == QTYPE_VALUES.SOA:
+            self.resource_record = SOARecord()
         else:
             print(type_value)
             raise Exception("QTYPE NOT SUPPORTED YET.")
@@ -249,7 +251,8 @@ class HInfoRecord():
 
 
 class MXRecord():
-    pass
+    def __init__(self):
+        pass
 
 
 class NSRecord(DnsWaySerializer):
@@ -285,8 +288,73 @@ class PTRRecord():
     pass
 
 
-class SOARecord():
-    pass
+class SOARecord(DnsWaySerializer):
+    def __init__(self):
+        self.__mname    =     DomainName()
+        self.__rname    =     DomainName()
+        self.__serial   =     int32()
+        self.__refresh  =     int32()
+        self.__retry    =     int32()
+        self.__expire   =     int32()
+        self.__minimum  =     int32()
+    
+    @property
+    def mname(self):
+        return self.__mname
+    @property
+    def rname(self):
+        return self.__rname
+    @property
+    def serial(self):
+        return self.__serial
+    @property
+    def refresh(self):
+        return self.__refresh
+    @property
+    def retry(self):
+        return self.__retry
+    @property
+    def expire(self):
+        return self.__expire
+    @property
+    def minimum(self):
+        return self.__minimum
+
+    @mname.setter
+    def mname(self,mname:str):
+        self.__mname.domain_name = mname
+
+    @rname.setter
+    def rname(self,rname:str):
+        self.__rname.domain_name = rname
+    @serial.setter
+    def serial(self,serial:int):
+        self.__serial.value = serial
+
+    @refresh.setter
+    def refresh(self,refresh:int):
+        self.__refresh.value = refresh
+
+    @retry.setter
+    def retry(self,retry:int):
+        self.__retry.value = retry
+
+    @expire.setter
+    def expire(self,expire:int):
+        self.__expire.value = expire
+
+    @minimum.setter
+    def minimum(self,minimum:int):
+        self.__minimum.value = minimum
+
+    def encode(self, /):
+        return super().encode(self.mname, self.rname, self.serial, self.refresh, self.retry, self.expire, self.minimum)
+
+    def decode(self, data, offset):
+        return super().decode(data, offset, self.mname, self.rname, self.serial, self.refresh, self.retry, self.expire, self.minimum)
+    
+    def __str__(self):
+        return f"{self.mname.domain_name} {self.rname.domain_name} {self.serial} {self.refresh} {self.retry} {self.expire} {self.minimum}"
 
 
 class TXTRecord():

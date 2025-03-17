@@ -102,3 +102,18 @@ class NSRecordView:
 
      def __str__(self):
           return self.nsdname
+     
+
+@dataclass(frozen=True)
+class SOARecordView:
+     mname:str
+     rname:str
+     serial:int
+     refresh:int
+     retry:int
+     exprire:int
+     minimum:int
+
+     def __str__(self):
+          return f"{self.mname} {self.rname} {self.serial} {self.refresh} {self.retry} {self.exprire} {self.minimum}"
+     

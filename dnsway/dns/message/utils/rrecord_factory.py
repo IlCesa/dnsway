@@ -1,4 +1,4 @@
-from dnsway.dns.message.definition.resource_record import QCLASS_VALUES, QTYPE_VALUES, AAAARecord, ARecord, CNameRecord, NSRecord
+from dnsway.dns.message.definition.resource_record import QCLASS_VALUES, QTYPE_VALUES, AAAARecord, ARecord, CNameRecord, NSRecord, SOARecord
 from abc import ABC, abstractmethod
 
 from dnsway.dns.message.exception import DnsWayQTypeNotSupported
@@ -17,6 +17,7 @@ class ResourceRecordFactory(ResourceRecordAbstractFactory):
     def create_rrecord(self, qtype:str|QTYPE_VALUES, qclass:str|QCLASS_VALUES):
         type_value = QTYPE_VALUES[qtype] if type(qtype) == str else qtype
         qclass_value = QCLASS_VALUES[qclass] if type(qclass) == str else qclass
+        print("EVALUATING ",type_value)
         resource_record = None
         if type_value == QTYPE_VALUES.A:
             resource_record = ARecord()
@@ -26,6 +27,8 @@ class ResourceRecordFactory(ResourceRecordAbstractFactory):
             resource_record = CNameRecord()
         elif type_value == QTYPE_VALUES.NS:
             resource_record = NSRecord()
+        elif type_value == QTYPE_VALUES.SOA:
+            resource_record = SOARecord()
         else:
             print(type_value)
             raise DnsWayQTypeNotSupported("QTYPE NOT SUPPORTED YET.")

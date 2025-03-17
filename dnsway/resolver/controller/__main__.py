@@ -36,7 +36,6 @@ if __name__ == "__main__":
     #         print(s.address,s.nsdname, s.get_score())
     #     print(qrh.sbelt)
     #     print(qrh.cache)
-    print("NOERROR")
-    exit(0)
+
 
     
