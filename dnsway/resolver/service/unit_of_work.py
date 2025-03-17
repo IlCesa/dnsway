@@ -1,6 +1,8 @@
 # il servizio unit of work è usato dal service layer per accedere al repository
 # nu macell comunq
 
+import asyncio
+from contextlib import asynccontextmanager
 import threading
 from typing import Optional
 
@@ -17,12 +19,13 @@ class QueryHistoryUnitOfWork():
         self.history = InMemoryQueryRepository()
         self._committed = False
 
-        self.lock = threading.Lock()
+        self.lock = asyncio.Lock()
     
-    def __enter__(self):
-        self.lock.acquire()
+    async def __aenter__(self):
+        await self.lock.acquire()
         self._committed = False
         return self
+    
     
     def commit(self):
         self._committed = True
@@ -31,7 +34,7 @@ class QueryHistoryUnitOfWork():
         pass
         #self.repository.data.clear()
     
-    def __exit__(self, exc_type, exc_value, traceback):
+    async def __aexit__(self, exc_type, exc_value, traceback):
         self.lock.release()
         if exc_type:
             self.rollback()

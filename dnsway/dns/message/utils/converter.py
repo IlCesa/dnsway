@@ -55,7 +55,7 @@ class DnsMessageConverter(DnsWayConverter):
 class HeaderConverter(DnsWayConverter):
     
     def to_view(self, header:HeaderMessage):
-        return HeaderView(id=header.id,
+        return HeaderView(id=header.id.value,
                           qr=QUERY_TYPE(header.query_type),
                           opcode=OPCODE_TYPE(header.opcode.value),
                           rcode=RCODE_TYPE(header.rcode.value),
@@ -63,10 +63,10 @@ class HeaderConverter(DnsWayConverter):
                           ra=header.ra,
                           rd=header.rd,
                           tc=header.tc,
-                          qdcount=header.qdcount,
-                          ancount=header.ancount,
-                          nscount=header.nscount,
-                          arcount=header.arcount)
+                          qdcount=header.qdcount.value,
+                          ancount=header.ancount.value,
+                          nscount=header.nscount.value,
+                          arcount=header.arcount.value)
     
     def to_msg(self, header_view:HeaderView, dnsway_message_builder:DnsMessageBuilderNew): 
         dnsway_message_builder.header(rd=header_view.rd, ra=header_view.ra,
@@ -115,7 +115,7 @@ class ResourceRecordFormatConverter(DnsWayConverter):
         #rdata = qrr_factory.create_rrecord(resource_record_view.type_value, resource_record_view.class_value)
         
         for resource_record_view in rrformats_view:
-            rdata = ResourceRecordConverter().to_msg(resource_record_view)
+            rdata = ResourceRecordConverter().to_msg(resource_record_view.data)
             if self.rrformat_type == 'answer':
                 dnsway_message_builder.answer(name=resource_record_view.name,type_value=resource_record_view.type_value, class_value=resource_record_view.class_value, ttl=resource_record_view.ttl, rdata=rdata)
             elif self.rrformat_type == 'autorithy':

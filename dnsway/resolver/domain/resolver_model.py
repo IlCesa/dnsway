@@ -15,7 +15,7 @@ class NameServer:
       self.address = address
       self.ttl = ttl
       self.__w = [0.5, 0.25, 0.15, 0.07, 0.03]
-      self.__t = [5] * 5
+      self.__t = [1] * 5 # questa è una bella question, quanto dovrebbe essere il tempo medio iniziale? l'rfc indica come valore "scarso" 5s oppure 10s, quindi usero' un approccio "ottimistico" dove "A FIDUCIA" indico i tempi medi di ogni ns come "buoni" e poi se nelle varie richieste supereranno i 5s li scarto via.
       self.__req = 0
       self.__res = 0
 
@@ -42,28 +42,9 @@ class NameServer:
    def get_score(self):
       # NB: il prodotto scalare nel mio caso non va bene perche' avendo come riferimento (1,0) weighted_response nella misurazione. La cosine similarity sarebbe l'ideale visto che i moduli dei vettori influisocno sul risultato. Per ora usero' una banale distanza euclidea.
       return math.sqrt((1 - self.batting_average())**2 + (0 - self.weighted_response())**2)
-      # return (self.batting_average(), self.weighted_response())
 
    def __str__(self):
       return f"{self.nsdname} {self.address} {self.batting_average()} {self.weighted_response()} {self.get_score()}"
-
-
-# class NameServer:
-#    def __init__(self, ns:str, address:str = None):
-#       self.ns = ns # zone nameserver
-#       self.address:list[Address] = []
-
-#       if address:
-#          self.add_address(address)
-
-#    def add_address(self, address:str) -> None:
-#       self.address.append(Address(address))
-   
-#    def get_address(self, address:str) -> Address:
-#       for addr in self.address:
-#          if addr.address == address:
-#             return addr
-#       return -1
 
 #TODO: Should depends on abstraction that define the desired "behavior" ex. cache_record, next_addres etc.
 class QueryResolutionHistory:
@@ -83,9 +64,10 @@ class QueryResolutionHistory:
             return ns
       return -1
 
-   def next_address(self, desired_addresses:int=1, score_cutoff:int = 0.2):
+   def next_address(self, desired_addresses:int=1, score_cutoff:int = 5):
       # and ':' not in x.address
-      self.slist = list(filter(lambda x:x.get_score() > score_cutoff and ':' not in x.address, self.slist))
+      #TODO: aggiungere check ttl anche per i ns server HERE
+      self.slist = list(filter(lambda x:x.get_score() < score_cutoff, self.slist))
       if self.slist:
          s = sorted(self.slist,  key=lambda x: x.get_score())
          return s[:desired_addresses]
@@ -119,7 +101,7 @@ class QueryResolutionHistory:
 
    def calculate_match_count(self, nsdname1:str, nsdname2:str):
       s1 = nsdname1.split('.')
-      s2 = nsdname1.split('.')
+      s2 = nsdname2.split('.')
       s1.reverse()
       s2.reverse()
       return sum(1 for x, y in zip(s1, s2) if x == y)
