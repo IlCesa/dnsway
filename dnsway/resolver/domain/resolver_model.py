@@ -59,7 +59,8 @@ class QueryResolutionHistory:
       self.__reset_slist()
 
    def get_ns_by_address(self, address):
-      for ns in self.slist:
+      all_ns_list = set(self.slist + self.sbelt)
+      for ns in all_ns_list:
          if ns.address == address:
             return ns
       return -1
@@ -76,7 +77,6 @@ class QueryResolutionHistory:
          return self.slist[:desired_addresses]
 
    def set_slist(self, delegations_list:list[NameServer]):
-      # nel mio caso che sto seguendo fedelmente l'rfc potrei, invece di resettare la lista, mantenere tutti i nameserver con distanza matchcount minima.
       self.slist = delegations_list
       self.__update_mc()
 

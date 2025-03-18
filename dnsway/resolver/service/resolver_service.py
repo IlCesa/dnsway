@@ -32,7 +32,7 @@ class DnsServerResolverServiceImpl(AbstractResolverServiceLayer):
         async with self.query_history_uow as qru:
             qrh:QueryResolutionHistory = qru.history.get(*self.query_key)
             ns: NameServer = qrh.get_ns_by_address(address)
-            # print("FROM CALLBACK FOUND NS:",ns)
+            print("FROM CALLBACK AFTER",address, "FOUND NS:",ns, self.query_key)
             if ns != -1:
                 ns.increment_req()
                 if not timed_out:
@@ -84,9 +84,9 @@ class DnsServerResolverServiceImpl(AbstractResolverServiceLayer):
             else:  
                 async with self.query_history_uow as qru:
                     qrh:QueryResolutionHistory = qru.history.get(sname,stype,sclass)
-                    na:NameServer = qrh.next_address(desired_addresses=4)
+                    na:NameServer = qrh.next_address(desired_addresses=8)
                     addresses = [ns.address for ns in na]
-                    # print(f"Next address:{addresses}")
+                    print(f"Next address:{addresses}")
                 msg = (DnsMessageBuilderNew().header(qr=QUERY_TYPE.QUERY,opcode=OPCODE_TYPE.QUERY).question(qname=sname, qtype=stype, qclass=sclass).build())
                 recv_iteration_message_view = await self.network_resolver_service.resolve(addresses, msg, self.__update_ns_stats_callback)
             
