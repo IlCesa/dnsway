@@ -7,7 +7,7 @@ from dnsway.dns.message.utils.dns_message_view import DnsMessageView
 from dnsway.dns.transport.dns_transport import TRANSPORT_MODE, DnsWayTransport, DnsWayTransportFactory, DnsWayUdpTransport
 
 def main():
-    parser = argparse.ArgumentParser(description="DnsWay v2.0.0 - giovanni.cesarano99@gmail.com - By IlCesa")
+    parser = argparse.ArgumentParser(description="DnsWay v1.1.0 - giovanni.cesarano99@gmail.com - By IlCesa")
     parser.add_argument("domain_name", type=str, help='domain name question to resolve')
     parser.add_argument("--qtype", choices=["A", "AAAA", "CNAME"], help="question record qtype",default='A')
     parser.add_argument("--qclass", choices=["IN", "CH"], help="question record qclass", default='IN')
