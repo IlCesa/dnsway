@@ -9,7 +9,7 @@ class NetworkResolverService():
 
     async def send_msg(self, raw_req_msg:DnsMessage, future, address, callback, port=53):
         try:
-            print("sending to:",address)
+            # print("sending to:",address)
             transport, protocol = await asyncio.get_running_loop().create_datagram_endpoint(lambda: UDPClientProtocol(future, address, callback),remote_addr=(address, port),family=socket.AF_INET6 if ':' in address else socket.AF_INET)
             transport.sendto(raw_req_msg.encode())
             # response = await asyncio.wait_for(future, timeout)
@@ -40,7 +40,7 @@ class UDPClientProtocol(asyncio.DatagramProtocol):
 
     def datagram_received(self, data, addr):
         elapsed_time = time.time() - self._start_time
-        print("received response from",addr)
+        # print("received response from",addr)
         asyncio.create_task(self.callback(addr,elapsed_time,False))
         if not self.future.done():
             res_msg = DnsMessage.Decode(data)

@@ -1,13 +1,14 @@
 # DnsWay
 ## 🌐 A Simple Python Implementation of RFC 1034/1035
 
-DnsWay is a lightweight and educational implementation of DNS protocols, built in Python. It aims to provide a simple yet effective way to understand and work with DNS.
+DnsWay is a lightweight implementation of DNS protocol, built in Python.
+It aims to provide a way to understand and work with DNS.
 
 ## 🚀 Features
 
 - ✅ **RFC1034/1035** - Full support for DNS fundamentals
-- ❌ **EDNS0** - Extended DNS support (Coming soon!)
-- ❌ **DNSSEC** - Not yet supported (Coming soon!)
+- ❌ **EDNS0** - Extended DNS support
+- ❌ **DNSSEC** - Dns Security 
 
 ---
 
@@ -58,18 +59,4 @@ python dnsway.py --resolver --port 5353
 This mode allows handling recursive queries by forwarding them to authoritative name servers.
 
 ---
-
-## 🏠 Local NameServer
-
-DnsWay can act as a local authoritative name server.
-
-```bash
-python dnsway.py --nameserver --zone example.zone
-```
-
-Where `example.zone` is a file defining DNS records for your local domain.
-
----
-
-🔧 **Contributions welcome!** Feel free to report issues or suggest improvements.
 

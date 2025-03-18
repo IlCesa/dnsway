@@ -32,13 +32,13 @@ class DnsServerResolverServiceImpl(AbstractResolverServiceLayer):
         async with self.query_history_uow as qru:
             qrh:QueryResolutionHistory = qru.history.get(*self.query_key)
             ns: NameServer = qrh.get_ns_by_address(address)
-            print("FROM CALLBACK AFTER",address, "FOUND NS:",ns, self.query_key)
+            # print("FROM CALLBACK AFTER",address, "FOUND NS:",ns, self.query_key)
             if ns != -1:
                 ns.increment_req()
                 if not timed_out:
                     ns.increment_res()
                     ns.add_t(elapsed_time)
-                    print("NS STATS FOR",address,"UPDATED SUCCESFULLY")
+                    # print("NS STATS FOR",address,"UPDATED SUCCESFULLY")
 
     async def process(self, dns_message_view:DnsMessageView) -> DnsMessageView:
         try:
