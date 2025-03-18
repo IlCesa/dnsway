@@ -1,7 +1,6 @@
 # DnsWay
-## 🌐 A Simple Python Implementation of RFC 1034/1035
 
-DnsWay is a lightweight implementation of DNS protocol, built in Python.
+DnsWay is a lightweight implementation of DNS protocol, built in Python.  
 It aims to provide a way to understand and work with DNS.
 
 ## 🚀 Features
