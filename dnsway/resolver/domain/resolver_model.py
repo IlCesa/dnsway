@@ -78,6 +78,9 @@ class QueryResolutionHistory:
 
    def set_slist(self, delegations_list:list[NameServer]):
       self.slist = delegations_list
+      print("NEW DELEGATIONS FOR", self.sname)
+      for ns in delegations_list:
+         print(ns)
       self.__update_mc()
 
    def cache_rrecord(self, rrecord:RRecordView):

@@ -28,9 +28,9 @@ class DnsWayUdpResolver:
         dns_message = DnsMessage.Decode(data)
         dns_message_view = DnsMessageConverter().to_view(dns_message)
         res_msg_view = await DnsServerResolverServiceImpl(query_history_of_work=self.qrh_uow).process(dns_message_view)
-        async with self.qrh_uow as qru:
+        '''async with self.qrh_uow as qru:
             for ns in self.qrh_uow.history.sbelt_repo.list():
-                print(ns)
+                print(ns)'''
         res_dns_msg = DnsMessageConverter().to_msg(res_msg_view)
         return res_dns_msg
         

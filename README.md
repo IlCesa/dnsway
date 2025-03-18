@@ -40,7 +40,7 @@ pip install dnsway
 DnsWay can be used as a client to query DNS records.
 
 ```bash
-dnsway_client www.google.it --resolver=127.0.0.1 --port=5353 --qtype=A
+python -m dnsway.client www.google.it --resolver=127.0.0.1 --port=5353 --qtype=A
 ```
 
 Example output:
@@ -64,11 +64,11 @@ Example output:
 Run DnsWay as a resolver to forward queries to upstream DNS servers.
 
 ```bash
-dnsway_resolver
+python -m dnsway.resolver
 DnsWay Udp Resolver listening on: 127.0.0.1:5353
 ```
 
 This mode allows handling recursive queries by forwarding them to authoritative name servers.
-s
+
 ---
 
