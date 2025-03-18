@@ -1,3 +1,4 @@
+import copy
 from dnsway.dns.message.utils.dns_message_view import RRecordView
 from dataclasses import dataclass
 import math
@@ -84,6 +85,7 @@ class QueryResolutionHistory:
       self.__update_mc()
 
    def cache_rrecord(self, rrecord:RRecordView):
+      self.cache = list(filter(lambda x: x.rrecord_view != rrecord, self.cache))
       absolute_ttl_time = int(time.time()) + int(rrecord.ttl)
       self.cache.append(RRecordCacheView(rrecord,absolute_ttl_time))
 

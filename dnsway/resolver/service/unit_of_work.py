@@ -1,6 +1,7 @@
 # il servizio unit of work è usato dal service layer per accedere al repository
 # nu macell comunq
 
+from contextlib import asynccontextmanager
 from dnsway.resolver.adapter.cache_repository import InMemoryQueryRepository
 from typing import Optional
 import asyncio
@@ -14,6 +15,7 @@ class AbstractUnitOfWork():
 class QueryHistoryUnitOfWork():
     def __init__(self):
         self.history = InMemoryQueryRepository()
+        self.history_locks = {}
         self._committed = False
 
         self.lock = asyncio.Lock()
@@ -22,6 +24,20 @@ class QueryHistoryUnitOfWork():
         await self.lock.acquire()
         self._committed = False
         return self
+
+
+    '''@asynccontextmanager
+    async def get(self, sname, stype, sclass):
+        await self.lock.acquire()
+        skey = (sname,stype,sclass)
+        if skey not in self.history_locks:
+            self.histoty_locks[skey] = asyncio.Lock()
+        slock = self.histoty_locks[skey]
+        self.lock.release()
+
+        await slock.acquire()
+        yield self.history.get(sname, stype, sclass)
+        slock.release()'''
     
     
     def commit(self):

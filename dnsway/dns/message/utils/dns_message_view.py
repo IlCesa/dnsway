@@ -51,6 +51,11 @@ class RRecordView():
           self.ttl = ttl
           self.data = data
      
+     def __eq__(self, other):
+        if not isinstance(other, RRecordView):
+            return NotImplemented
+        return self.name == other.name and self.type_value == other.type_value and self.class_value == other.class_value and self.ttl == other.ttl and self.data == other.data
+     
      def __str__(self):
           return f"% {self.name} {self.type_value.name} {self.class_value.name} {self.ttl} {self.data} \n"
 
