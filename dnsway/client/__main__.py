@@ -6,7 +6,7 @@ from dnsway.dns.message.utils.converter import DnsMessageConverter
 from dnsway.dns.message.utils.dns_message_view import DnsMessageView
 from dnsway.dns.transport.dns_transport import TRANSPORT_MODE, DnsWayTransport, DnsWayTransportFactory, DnsWayUdpTransport
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="DnsWay v2.0.0 - giovanni.cesarano99@gmail.com - By IlCesa")
     parser.add_argument("domain_name", type=str, help='domain name question to resolve')
     parser.add_argument("--qtype", choices=["A", "AAAA", "CNAME"], help="question record qtype",default='A')
@@ -68,3 +68,6 @@ if __name__ == "__main__":
     ## if it is enabled -> swtich to tcp connection
     ## else iterate through answer RRDATA list and print the informations
     
+
+if __name__ == "__main__":
+    main()

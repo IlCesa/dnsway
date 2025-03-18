@@ -9,7 +9,7 @@ with open(path.join(dir, 'README.md'), encoding='utf-8') as f:
 
 setuptools.setup(
    name='dnsway',
-   version='1.0.3',
+   version='1.1.0',
    description='A Simple Implementation of the RFC1035 DNS Memo.',
    long_description=long_description,
    long_description_content_type='text/markdown',
@@ -20,5 +20,11 @@ setuptools.setup(
    license='MIT',
    install_requires=[], #external packages as dependencies
    platforms=["any"],
-   python_requires=">=3.8"
+   python_requires=">=3.8",
+   entry_points={
+        'console_scripts': [
+            'dnsway_client = dnsway.client.__main__:main',
+            'dnsway_resolver = dnsway.resolver.controller.__main__:main',
+        ],
+    },
 )

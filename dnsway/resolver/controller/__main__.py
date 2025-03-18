@@ -1,10 +1,12 @@
 
 from dnsway.resolver.controller.resolver import DnsWayResolverServer
 
+def main():
+    DnsWayResolverServer().start()
 
 if __name__ == "__main__": 
     # TODO: configurazioni: porto, logger, --nocache, boh basta per ora   
-    DnsWayResolverServer().start()
+    main()
 
 
     # @DEBUG FOR TESTING PURPOSE
