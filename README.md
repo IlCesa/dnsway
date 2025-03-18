@@ -24,7 +24,7 @@ cd dnsway
 pip install -r requirements.txt
 ```
 
-<!-->
+<!--
 Or install via pip (if available):
 
 ```bash
