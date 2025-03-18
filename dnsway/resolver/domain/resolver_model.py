@@ -1,8 +1,8 @@
+from dnsway.dns.message.utils.dns_message_view import RRecordView
 from dataclasses import dataclass
 import math
 import time
-from dnsway.dns.message.utils.dns_message_view import RRecordView
-import threading
+
 
 @dataclass(frozen=True)
 class RRecordCacheView:

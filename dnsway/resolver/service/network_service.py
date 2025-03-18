@@ -1,9 +1,9 @@
-import socket
+from dnsway.dns.message.utils.converter import DnsMessageConverter
 from dnsway.dns.message.dns_message import DnsMessage
 import asyncio
+import socket
 import time
 
-from dnsway.dns.message.utils.converter import DnsMessageConverter
 
 class NetworkResolverService():
 

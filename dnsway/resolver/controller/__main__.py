@@ -1,15 +1,9 @@
-import time
-from dnsway.dns.message.definition.resource_record import QCLASS_VALUES, QTYPE_VALUES
-from dnsway.dns.message.dns_builder import DnsMessageBuilderNew
-from dnsway.dns.message.header import OPCODE_TYPE, QUERY_TYPE
-from dnsway.dns.message.utils.converter import DnsMessageConverter
+
 from dnsway.resolver.controller.resolver import DnsWayResolverServer
-import asyncio
 
-from dnsway.resolver.service.resolver_service import DnsServerResolverServiceImpl
-from dnsway.resolver.service.unit_of_work import QueryHistoryUnitOfWork
 
-if __name__ == "__main__":    
+if __name__ == "__main__": 
+    # TODO: configurazioni: porto, logger, --nocache, boh basta per ora   
     DnsWayResolverServer().start()
 
 

@@ -1,17 +1,14 @@
 # il servizio unit of work è usato dal service layer per accedere al repository
 # nu macell comunq
 
-import asyncio
-from contextlib import asynccontextmanager
-import threading
-from typing import Optional
-
 from dnsway.resolver.adapter.cache_repository import InMemoryQueryRepository
-from dnsway.server.adapter.cache_repository import AbstractCacheRepository, InMemoryRepository
+from typing import Optional
+import asyncio
+
 
 class AbstractUnitOfWork():
     def __init__(self):
-        self.repository: AbstractCacheRepository = None
+        pass
 
 
 class QueryHistoryUnitOfWork():

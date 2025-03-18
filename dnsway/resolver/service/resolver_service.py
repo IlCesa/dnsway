@@ -78,6 +78,8 @@ class DnsServerResolverServiceImpl(AbstractResolverServiceLayer):
 
             if res != -1:
                 cache_response = True
+                # for cache_record in res:
+                    
                 answers = res
             else:  
                 async with self.query_history_uow as qru:
@@ -93,7 +95,7 @@ class DnsServerResolverServiceImpl(AbstractResolverServiceLayer):
                 additionals = recv_iteration_message_view.additional_list
 
                 if recv_iteration_message_view.header.rcode_type == RCODE_TYPE.NAME_ERROR:
-                    print("here")
+                    # print("here")
                     raise DnsWayResolverNameErrorException(autorithies)
                 # print(recv_iteration_message_view)
                 
