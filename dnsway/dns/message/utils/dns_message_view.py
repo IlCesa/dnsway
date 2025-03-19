@@ -122,3 +122,25 @@ class SOARecordView:
      def __str__(self):
           return f"{self.mname} {self.rname} {self.serial} {self.refresh} {self.retry} {self.exprire} {self.minimum}"
      
+
+@dataclass(frozen=True)
+class MXRecordView:
+     preference:int
+     exchange:str
+
+     def __str__(self):
+          return f"{self.preference} {self.exchange}"
+     
+@dataclass(frozen=True)
+class TXTRecordView:
+     txt_data:str
+
+     def __str__(self):
+          return self.txt_data
+     
+@dataclass(frozen=True)
+class PTRRecordView:
+     ptrdname:str
+
+     def __str__(self):
+          return self.ptrdname

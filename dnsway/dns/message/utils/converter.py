@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
 from typing import Literal
-from dnsway.dns.message.definition.resource_record import QCLASS_VALUES, QTYPE_VALUES, AAAARecord, ARecord, CNameRecord, NSRecord, SOARecord
+from dnsway.dns.message.definition.resource_record import QCLASS_VALUES, QTYPE_VALUES, AAAARecord, ARecord, CNameRecord, MXRecord, NSRecord, PTRRecord, SOARecord, TXTRecord
 from dnsway.dns.message.dns_builder import DnsMessageBuilderNew
 from dnsway.dns.message.dns_message import DnsMessage
 from dnsway.dns.message.header import OPCODE_TYPE, QUERY_TYPE, RCODE_TYPE, HeaderMessage
 from dnsway.dns.message.question import QuestionMessage
 from dnsway.dns.message.resource import ResourceRecordFormat
-from dnsway.dns.message.utils.dns_message_view import AAAARecordView, ARecordView, CNameRecordView, DnsMessageView, HeaderView, NSRecordView, QuestionView, RRecordView, SOARecordView
+from dnsway.dns.message.utils.dns_message_view import AAAARecordView, ARecordView, CNameRecordView, DnsMessageView, HeaderView, MXRecordView, NSRecordView, PTRRecordView, QuestionView, RRecordView, SOARecordView, TXTRecordView
 from dnsway.dns.message.utils.rrecord_factory import ResourceRecordFactory
 
 
@@ -145,6 +145,12 @@ class ResourceRecordConverter(DnsWayConverter):
             return NsRecordConverter().to_msg(rrecord_view)
         elif isinstance(rrecord_view,SOARecordView):
             return SOARecordConverter().to_msg(rrecord_view)
+        elif isinstance(rrecord_view,MXRecordView):
+            return MXRecordConverter().to_msg(rrecord_view)
+        elif isinstance(rrecord_view,PTRRecordView):
+            return PTRRecordConverter().to_msg(rrecord_view)
+        elif isinstance(rrecord_view,TXTRecordView):
+            return TXTRecordConverter().to_msg(rrecord_view) 
         else:
             print("CONVERSION NOT SUPPORTED FOR TYPE",type(rrecord_view))
             pass # NOT SUPPORTED TYPE CONVERSION
@@ -161,6 +167,12 @@ class ResourceRecordConverter(DnsWayConverter):
             return NsRecordConverter().to_view(rrecord)
         elif isinstance(rrecord, SOARecord):
             return SOARecordConverter().to_view(rrecord)
+        elif isinstance(rrecord,MXRecord):
+            return MXRecordConverter().to_view(rrecord)
+        elif isinstance(rrecord,PTRRecord):
+            return PTRRecordConverter().to_view(rrecord)
+        elif isinstance(rrecord,TXTRecord):
+            return TXTRecordConverter().to_view(rrecord)
         else:
             print("CONVERSION NOT SUPPORTED FOR TYPE",type(rrecord))
             pass # NOT SUPPORTED TYPE CONVERSION
@@ -226,3 +238,38 @@ class SOARecordConverter():
         soarecord.expire = soarecord_view.exprire
         soarecord.minimum = soarecord_view.minimum
         return soarecord
+    
+
+
+
+
+class PTRRecordConverter():
+    def to_view(self, ptrrecord:PTRRecord):
+        return PTRRecordView(ptrrecord.ptrdname.domain_name)
+    
+    def to_msg(self, ptrrecord_view:PTRRecordView):
+        ptrrecord = PTRRecord()
+        ptrrecord.ptrdname = ptrrecord_view.ptrdname
+        return ptrrecord
+
+
+class TXTRecordConverter():
+    def to_view(self, txtrecord:TXTRecord):
+        return TXTRecordView(txtrecord.txt_data)
+    def to_msg(self, txtrecord_view:TXTRecordView):
+        txtrecord = TXTRecord()
+        txtrecord.txt_data = txtrecord_view.txt_data
+        return txtrecord
+
+class MXRecordConverter():
+    def to_view(self, mxrecord:MXRecord):
+        return MXRecordView(mxrecord.preference.value, mxrecord.exchange.domain_name)
+    def to_msg(self, mxrecord_view:MXRecordView):
+        print("Converting MX view to msg",mxrecord_view)
+        mxrecord = MXRecord()
+        mxrecord.preference = mxrecord_view.preference
+        print("prima che si rompa")
+        mxrecord.exchange = mxrecord_view.exchange
+        print(mxrecord.encode())
+        print("dopo")
+        return mxrecord

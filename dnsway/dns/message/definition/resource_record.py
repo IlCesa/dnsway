@@ -97,6 +97,13 @@ class RRecordData(DnsWaySerializer):
             self.resource_record = NSRecord()
         elif type_value == QTYPE_VALUES.SOA:
             self.resource_record = SOARecord()
+        elif type_value == QTYPE_VALUES.MX:
+            self.resource_record = MXRecord()
+        elif type_value == QTYPE_VALUES.PTR:
+            self.resource_record = PTRRecord()
+        elif type_value == QTYPE_VALUES.TXT:
+            data = bytearray(data[offset:offset+self.rdata_length.value])
+            self.resource_record = TXTRecord()
         else:
             print(type_value)
             raise Exception("QTYPE NOT SUPPORTED YET.")
@@ -250,9 +257,34 @@ class HInfoRecord():
     pass
 
 
-class MXRecord():
+class MXRecord(DnsWaySerializer):
     def __init__(self):
-        pass
+        self.__preference = int16()
+        self.__exchange = DomainName()
+
+    @property
+    def preference(self):
+        return self.__preference
+    
+    @property
+    def exchange(self):
+        return self.__exchange
+    
+    @preference.setter
+    def preference(self, value:int):
+        self.__preference.value = value
+
+    @exchange.setter
+    def exchange(self, domain_name:str):
+        self.__exchange.domain_name = domain_name
+    
+    def encode(self):
+        return super().encode(self.preference, self.exchange)
+    
+    def decode(self, data, offset):
+        return super().decode(data, offset, self.preference, self.exchange)
+
+    
 
 
 class NSRecord(DnsWaySerializer):
@@ -260,32 +292,41 @@ class NSRecord(DnsWaySerializer):
     def __init__(self):
         self.__alias_name = DomainName()
     
-
     @property
     def alias_name(self):
         return self.__alias_name
     
-
     @alias_name.setter
     def alias_name(self, name: str):
         self.__alias_name.domain_name = name
 
-
     def encode(self, /):
         return self.alias_name.encode()
     
-
     def decode(self, data, offset):
         return self.alias_name.decode(data, offset)
-        # k =  self.alias_name.decode(data, offset)
-        # return k 
     
     def __str__(self):
         return self.alias_name.domain_name
 
 
-class PTRRecord():
-    pass
+class PTRRecord(DnsWaySerializer):
+    def __init__(self):
+        self.__ptrdname = DomainName()
+
+    @property
+    def ptrdname(self):
+        return self.__ptrdname
+    
+    @ptrdname.setter
+    def ptrdname(self, domain_name:str):
+        self.__ptrdname.domain_name = domain_name
+
+    def encode(self, *args):
+        return super().encode(self.ptrdname)
+    
+    def decode(self, data, offset, *args):
+        return super().decode(data, offset, self.ptrdname)
 
 
 class SOARecord(DnsWaySerializer):
@@ -301,21 +342,27 @@ class SOARecord(DnsWaySerializer):
     @property
     def mname(self):
         return self.__mname
+    
     @property
     def rname(self):
         return self.__rname
+    
     @property
     def serial(self):
         return self.__serial
+    
     @property
     def refresh(self):
         return self.__refresh
+    
     @property
     def retry(self):
         return self.__retry
+    
     @property
     def expire(self):
         return self.__expire
+    
     @property
     def minimum(self):
         return self.__minimum
@@ -327,6 +374,7 @@ class SOARecord(DnsWaySerializer):
     @rname.setter
     def rname(self,rname:str):
         self.__rname.domain_name = rname
+
     @serial.setter
     def serial(self,serial:int):
         self.__serial.value = serial
@@ -357,8 +405,31 @@ class SOARecord(DnsWaySerializer):
         return f"{self.mname.domain_name} {self.rname.domain_name} {self.serial} {self.refresh} {self.retry} {self.expire} {self.minimum}"
 
 
-class TXTRecord():
-    pass
+class TXTRecord(DnsWaySerializer):
+    def __init__(self):
+        self.__txt_data = ''
+
+    @property
+    def txt_data(self):
+        return self.__txt_data
+    
+    @txt_data.setter
+    def txt_data(self, data:str):
+        self.__txt_data = data
+    
+    def encode(self):
+        # qui dovrei dividere ogni 256 byte, per ora mennefottoMeloo (viva u pilu) PS: a chi cazz i serve a LAUUUREA
+        str_byte =  len(self.txt_data).to_bytes(1, 'big')  + self.txt_data.encode('utf-8')
+        return str_byte
+    
+    def decode(self, data:bytearray, offset):
+        rtn_val = len(data)
+        while len(data) > 0:
+            str_len = data.pop(0)
+            byte_str = data[:str_len].decode(encoding='utf-8')
+            self.__txt_data += byte_str
+            data = data[str_len:]
+        return rtn_val
 
 
 #################################
